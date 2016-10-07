@@ -29,12 +29,41 @@ type GameRecord
     | NotStarted
 
 
+type alias Board =
+    Dict Point Stone
+
+
 type alias Game =
-    { boardStones : Dict Point Stone
+    { boardStones : Board
     , capturedStones : Dict Stone Int
     , boardSize : Int
     , gameRecord : GameRecord
     }
+
+
+addMove : Game -> Move -> Game
+addMove game move =
+    let
+        moveRecord =
+            Uncommented move
+
+        newGameRecord =
+            case game.gameRecord of
+                LastMove moves idx ->
+                    LastMove (Array.push moveRecord moves) (idx + 1)
+
+                NotStarted ->
+                    LastMove (Array.fromList [ moveRecord ]) 0
+
+        newBoard =
+            case move of
+                Play point stone ->
+                    Dict.insert point stone game.boardStones
+
+                _ ->
+                    game.boardStones
+    in
+        { game | boardStones = newBoard, gameRecord = newGameRecord }
 
 
 newGame : Int -> Game

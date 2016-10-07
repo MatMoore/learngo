@@ -25,7 +25,7 @@ type alias Flags =
 
 init : ( Game, Cmd Msg )
 init =
-    ( newGame 9
+    ( addMove (newGame 9) (Play ( 2, 2 ) Black)
     , Cmd.none
     )
 
