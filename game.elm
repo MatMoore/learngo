@@ -8,6 +8,10 @@ type alias Point =
     ( Int, Int )
 
 
+type GameMsg
+    = PlayUserStone Point
+
+
 type Stone
     = Black
     | White

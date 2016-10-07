@@ -3,9 +3,10 @@ module View exposing (view)
 import List exposing (map)
 import Dict
 import Html
+import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Game exposing (Point, Game, Board, Stone(..))
+import Game exposing (Point, Game, Board, Stone(..), GameMsg(..))
 
 
 type alias BoardConfig =
@@ -13,6 +14,7 @@ type alias BoardConfig =
     , padding : Float
     , lineWidth : Float
     , starRadius : Float
+    , stoneRadius : Float
     , stars : List Point
     }
 
@@ -55,7 +57,8 @@ nineByNineConfig =
     { size = 9
     , lineWidth = 0.5
     , starRadius = 1.25
-    , padding = 5
+    , stoneRadius = 0.46
+    , padding = 8
     , stars =
         [ ( 2, 2 )
         , ( 2, 4 )
@@ -107,21 +110,29 @@ horizontalLine config y =
         gridLine config left right
 
 
-stoneCircle : BoardConfig -> SVGPoint -> String -> Svg a
-stoneCircle config svgPoint fillColor =
+stoneCircle : BoardConfig -> SVGPoint -> { fillColor : String, onClick : Maybe a } -> Svg a
+stoneCircle config svgPoint options =
     let
         spacing =
             (lineSpacing config)
 
         stoneSize =
-            (toString (spacing * 0.45))
-    in
-        circle
+            (toString (spacing * config.stoneRadius))
+
+        coreOptions =
             [ cx svgPoint.x
             , cy svgPoint.y
             , r stoneSize
-            , fill fillColor
+            , fill options.fillColor
             ]
+
+        extraOptions =
+            List.filterMap
+                identity
+                [ Maybe.map Events.onClick options.onClick ]
+    in
+        circle
+            (coreOptions ++ extraOptions)
             []
 
 
@@ -168,7 +179,10 @@ stones : BoardConfig -> Board -> List (Svg a)
 stones config board =
     let
         viewStone point stone =
-            (stoneCircle config (boardPosition config point) (stoneColor stone))
+            stoneCircle
+                config
+                (boardPosition config point)
+                { fillColor = (stoneColor stone), onClick = Nothing }
     in
         Dict.foldl
             (\point stone result -> (viewStone point stone) :: result)
@@ -176,11 +190,35 @@ stones config board =
             board
 
 
-view : Game -> Html.Html a
+buttons : BoardConfig -> List (Svg GameMsg)
+buttons config =
+    let
+        numbers =
+            [0..(config.size - 1)]
+
+        allPoints =
+            List.concatMap
+                (\x -> List.map (\y -> ( x, y )) numbers)
+                numbers
+
+        playButton point =
+            let
+                options =
+                    { fillColor = "transparent", onClick = Just (PlayUserStone point) }
+            in
+                stoneCircle config (boardPosition config point) options
+    in
+        List.map
+            (\point -> (playButton point))
+            allPoints
+
+
+view : Game -> Html.Html GameMsg
 view model =
     svg
         [ width "300", height "300", viewBox "0 0 100 100" ]
         ([]
             ++ (grid nineByNineConfig)
             ++ (stones nineByNineConfig model.boardStones)
+            ++ (buttons nineByNineConfig)
         )

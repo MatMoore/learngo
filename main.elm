@@ -7,10 +7,6 @@ import Game exposing (..)
 import View exposing (view)
 
 
-type Msg
-    = NotImplemented
-
-
 type alias Flags =
     { size : Int }
 
@@ -23,15 +19,22 @@ type alias Flags =
 --    )
 
 
-init : ( Game, Cmd Msg )
+init : ( Game, Cmd GameMsg )
 init =
     ( addMove (newGame 9) (Play ( 2, 2 ) Black)
     , Cmd.none
     )
 
 
-update msg model =
-    ( model, Cmd.none )
+update : GameMsg -> Game -> ( Game, Cmd a )
+update msg game =
+    case msg of
+        PlayUserStone point ->
+            let
+                newGame =
+                    addMove game (Play point Black)
+            in
+                ( newGame, Cmd.none )
 
 
 subscriptions model =
