@@ -19,20 +19,20 @@ type alias Flags =
 --    )
 
 
-init : ( Game, Cmd GameMsg )
+init : ( Game, Cmd GameMessage )
 init =
-    ( addMove (newGame 9) (Play ( 2, 2 ) Black)
+    ( playMove (newGame 9) ( Black, Play ( 2, 2 ) )
     , Cmd.none
     )
 
 
-update : GameMsg -> Game -> ( Game, Cmd a )
+update : GameMessage -> Game -> ( Game, Cmd a )
 update msg game =
     case msg of
-        PlayUserStone point ->
+        UserPlay point ->
             let
                 newGame =
-                    addMove game (Play point Black)
+                    playMove game ( Black, Play point )
             in
                 ( newGame, Cmd.none )
 

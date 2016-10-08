@@ -6,7 +6,7 @@ import Html
 import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Game exposing (Point, Game, Board, Stone(..), GameMsg(..))
+import Game exposing (Point, Game, Board, Player(..), GameMessage(..))
 
 
 type alias BoardConfig =
@@ -23,7 +23,7 @@ type alias SVGPoint =
     { x : String, y : String }
 
 
-stoneColor : Stone -> String
+stoneColor : Player -> String
 stoneColor stone =
     case stone of
         Black ->
@@ -178,19 +178,19 @@ grid config =
 stones : BoardConfig -> Board -> List (Svg a)
 stones config board =
     let
-        viewStone point stone =
+        viewPlayer point stone =
             stoneCircle
                 config
                 (boardPosition config point)
                 { fillColor = (stoneColor stone), onClick = Nothing }
     in
         Dict.foldl
-            (\point stone result -> (viewStone point stone) :: result)
+            (\point stone result -> (viewPlayer point stone) :: result)
             []
             board
 
 
-buttons : BoardConfig -> List (Svg GameMsg)
+buttons : BoardConfig -> List (Svg GameMessage)
 buttons config =
     let
         numbers =
@@ -204,7 +204,7 @@ buttons config =
         playButton point =
             let
                 options =
-                    { fillColor = "transparent", onClick = Just (PlayUserStone point) }
+                    { fillColor = "transparent", onClick = Just (UserPlay point) }
             in
                 stoneCircle config (boardPosition config point) options
     in
@@ -213,12 +213,12 @@ buttons config =
             allPoints
 
 
-view : Game -> Html.Html GameMsg
+view : Game -> Html.Html GameMessage
 view model =
     svg
         [ width "300", height "300", viewBox "0 0 100 100" ]
         ([]
             ++ (grid nineByNineConfig)
-            ++ (stones nineByNineConfig model.boardStones)
+            ++ (stones nineByNineConfig model.boardPlayers)
             ++ (buttons nineByNineConfig)
         )

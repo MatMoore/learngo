@@ -4,28 +4,37 @@ import Dict exposing (Dict)
 import Array exposing (Array)
 
 
-type alias Point =
-    ( Int, Int )
-
-
-type GameMsg
-    = PlayUserStone Point
-
-
-type Stone
+type Player
     = Black
     | White
 
 
-type Move
-    = Play Point Stone
-    | Pass Stone
-    | Resign Stone
+type alias Point =
+    ( Int, Int )
 
 
-type MoveRecord
-    = Commented Move String
-    | Uncommented Move
+type Action
+    = Play Point
+    | Pass
+    | Resign
+
+
+type alias Move =
+    ( Player, Action )
+
+
+type GameMessage
+    = UserPlay Point
+
+
+type alias Board =
+    Dict Point Player
+
+
+type alias MoveRecord =
+    { move : Move
+    , notes : List String
+    }
 
 
 type GameRecord
@@ -33,47 +42,112 @@ type GameRecord
     | NotStarted
 
 
-type alias Board =
-    Dict Point Stone
-
-
 type alias Game =
-    { boardStones : Board
-    , capturedStones : Dict Stone Int
+    { boardPlayers : Board
+    , capturedStones : Dict Player Int
     , boardSize : Int
     , gameRecord : GameRecord
+    , currentPlayer : Player
+    , rules : List Rule
     }
 
 
-addMove : Game -> Move -> Game
-addMove game move =
-    let
-        moveRecord =
-            Uncommented move
+type alias MoveInProgress =
+    { provisionalBoard : Board, currentMove : Move, game : Game }
 
-        newGameRecord =
-            case game.gameRecord of
-                LastMove moves idx ->
-                    LastMove (Array.push moveRecord moves) (idx + 1)
 
-                NotStarted ->
-                    LastMove (Array.fromList [ moveRecord ]) 0
-
-        newBoard =
-            case move of
-                Play point stone ->
-                    Dict.insert point stone game.boardStones
-
-                _ ->
-                    game.boardStones
-    in
-        { game | boardStones = newBoard, gameRecord = newGameRecord }
+type Rule
+    = Rule (MoveInProgress -> Result String MoveInProgress)
 
 
 newGame : Int -> Game
 newGame boardSize =
     { boardSize = boardSize
-    , boardStones = Dict.empty
+    , boardPlayers = Dict.empty
     , capturedStones = Dict.empty
     , gameRecord = NotStarted
+    , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule ]
+    , currentPlayer = Black
     }
+
+
+newMoveRecord : Move -> MoveRecord
+newMoveRecord move =
+    { move = move, notes = [] }
+
+
+pushMoveRecord : MoveRecord -> GameRecord -> GameRecord
+pushMoveRecord moveRecord gameRecord =
+    case gameRecord of
+        LastMove moves idx ->
+            LastMove (Array.push moveRecord moves) (idx + 1)
+
+        NotStarted ->
+            LastMove (Array.fromList [ moveRecord ]) 0
+
+
+applyRules : Game -> Move -> Result String MoveInProgress
+applyRules game move =
+    let
+        initial : Result String MoveInProgress
+        initial =
+            Ok { provisionalBoard = game.boardPlayers, currentMove = move, game = game }
+
+        foldStep (Rule rule) result =
+            case result of
+                Ok moveInProgress ->
+                    rule moveInProgress
+
+                error ->
+                    error
+    in
+        List.foldl foldStep initial game.rules
+
+
+nextPlayer : Player -> Player
+nextPlayer player =
+    case player of
+        Black ->
+            White
+
+        White ->
+            Black
+
+
+playMove : Game -> Move -> Game
+playMove game move =
+    let
+        result =
+            applyRules game move
+    in
+        case result of
+            Ok moveInProgress ->
+                { game | boardPlayers = moveInProgress.provisionalBoard, gameRecord = pushMoveRecord (newMoveRecord move) game.gameRecord, currentPlayer = nextPlayer game.currentPlayer }
+
+            _ ->
+                game
+
+
+placePlayer : MoveInProgress -> Result String MoveInProgress
+placePlayer inProgress =
+    case inProgress.currentMove of
+        ( stone, Play point ) ->
+            Ok
+                { inProgress
+                    | provisionalBoard = (Dict.insert point stone inProgress.provisionalBoard)
+                }
+
+        _ ->
+            Ok inProgress
+
+
+onePlayerPerTurnRule : MoveInProgress -> Result String MoveInProgress
+onePlayerPerTurnRule inProgress =
+    let
+        ( player, action ) =
+            inProgress.currentMove
+    in
+        if player == inProgress.game.currentPlayer then
+            Ok inProgress
+        else
+            Err "It's not your turn"
