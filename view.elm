@@ -219,6 +219,6 @@ view model =
         [ width "300", height "300", viewBox "0 0 100 100" ]
         ([]
             ++ (grid nineByNineConfig)
-            ++ (stones nineByNineConfig model.boardPlayers)
+            ++ (stones nineByNineConfig model.boardStones)
             ++ (buttons nineByNineConfig)
         )

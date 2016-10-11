@@ -43,7 +43,7 @@ type GameRecord
 
 
 type alias Game =
-    { boardPlayers : Board
+    { boardStones : Board
     , capturedStones : Dict Player Int
     , boardSize : Int
     , gameRecord : GameRecord
@@ -63,7 +63,7 @@ type Rule
 newGame : Int -> Game
 newGame boardSize =
     { boardSize = boardSize
-    , boardPlayers = Dict.empty
+    , boardStones = Dict.empty
     , capturedStones = Dict.empty
     , gameRecord = NotStarted
     , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule ]
@@ -91,7 +91,7 @@ applyRules game move =
     let
         initial : Result String MoveInProgress
         initial =
-            Ok { provisionalBoard = game.boardPlayers, currentMove = move, game = game }
+            Ok { provisionalBoard = game.boardStones, currentMove = move, game = game }
 
         foldStep (Rule rule) result =
             case result of
@@ -122,7 +122,7 @@ playMove game move =
     in
         case result of
             Ok moveInProgress ->
-                { game | boardPlayers = moveInProgress.provisionalBoard, gameRecord = pushMoveRecord (newMoveRecord move) game.gameRecord, currentPlayer = nextPlayer game.currentPlayer }
+                { game | boardStones = moveInProgress.provisionalBoard, gameRecord = pushMoveRecord (newMoveRecord move) game.gameRecord, currentPlayer = nextPlayer game.currentPlayer }
 
             _ ->
                 game
