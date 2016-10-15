@@ -6,7 +6,7 @@ import Html
 import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Game exposing (Point, Game, Board, Player(..), GameMessage(..))
+import Game exposing (Point, Game, Board, Player(..), GameMessage(..), chatItems)
 
 
 type alias BoardConfig =
@@ -215,6 +215,29 @@ buttons config =
 
 view : Game -> Html.Html GameMessage
 view model =
+    Html.div
+        []
+        [ boardView model
+        , chatView model
+        ]
+
+
+chatView : Game -> Html.Html GameMessage
+chatView game =
+    Html.ul
+        []
+        (List.map chatItemView (chatItems game))
+
+
+chatItemView : String -> Html.Html GameMessage
+chatItemView item =
+    Html.li
+        []
+        [ text item ]
+
+
+boardView : Game -> Html.Html GameMessage
+boardView model =
     svg
         [ width "300", height "300", viewBox "0 0 100 100" ]
         ([]

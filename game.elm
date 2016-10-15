@@ -42,6 +42,25 @@ type GameRecord
     | NotStarted
 
 
+chatItems : Game -> List String
+chatItems game =
+    let
+        moveToChatItem moveRecord =
+            case moveRecord.move of
+                ( White, Pass ) ->
+                    Just "White pass"
+
+                _ ->
+                    Nothing
+    in
+        case game.gameRecord of
+            LastMove moveRecords idx ->
+                (List.filterMap moveToChatItem (Array.toList moveRecords))
+
+            _ ->
+                []
+
+
 type alias Game =
     { boardStones : Board
     , capturedStones : Dict Player Int
