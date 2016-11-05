@@ -3,6 +3,8 @@ module Game exposing (..)
 import Random
 import Dict exposing (Dict)
 import Array exposing (Array)
+import Maybe
+import Time exposing (Time)
 
 
 type Player
@@ -27,6 +29,7 @@ type alias Move =
 type GameMessage
     = UserPlay Point
     | ComputerPlay Move
+    | Tick Time
 
 
 type alias Board =
@@ -70,6 +73,7 @@ type alias Game =
     , gameRecord : GameRecord
     , currentPlayer : Player
     , rules : List Rule
+    , pendingMove : Maybe Move
     }
 
 
@@ -89,6 +93,7 @@ newGame boardSize =
     , gameRecord = NotStarted
     , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule ]
     , currentPlayer = Black
+    , pendingMove = Nothing
     }
 
 

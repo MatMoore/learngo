@@ -6,6 +6,7 @@ import Html.App exposing (program)
 import Game exposing (..)
 import View exposing (view)
 import AI exposing (generateMove, Strategy(..))
+import Time exposing (millisecond)
 
 
 type alias Flags =
@@ -38,15 +39,23 @@ update msg game =
                 generateMove ( RandomStone, White ) newGame
 
         ComputerPlay move ->
-            let
-                newGame =
-                    playMove game move
-            in
-                ( newGame, Cmd.none )
+            ( { game | pendingMove = Just move }, Cmd.none )
+
+        Tick time ->
+            case game.pendingMove of
+                Just move ->
+                    let
+                        newGame =
+                            playMove game move
+                    in
+                        ( { newGame | pendingMove = Nothing }, Cmd.none )
+
+                Nothing ->
+                    ( game, Cmd.none )
 
 
 subscriptions model =
-    Sub.none
+    Time.every (500 * millisecond) Tick
 
 
 main =
