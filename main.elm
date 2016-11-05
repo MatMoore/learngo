@@ -5,7 +5,7 @@ module Main exposing (..)
 import Html.App exposing (program)
 import Game exposing (..)
 import View exposing (view)
-import AI exposing (generatePass)
+import AI exposing (generateMove, Strategy(..))
 
 
 type alias Flags =
@@ -27,18 +27,22 @@ init =
     )
 
 
-update : GameMessage -> Game -> ( Game, Cmd a )
+update : GameMessage -> Game -> ( Game, Cmd GameMessage )
 update msg game =
     case msg of
         UserPlay point ->
             let
                 newGame =
                     playMove game ( Black, Play point )
-
-                newGame2 =
-                    generatePass White newGame
             in
-                ( newGame2, Cmd.none )
+                generateMove ( RandomStone, White ) newGame
+
+        ComputerPlay move ->
+            let
+                newGame =
+                    playMove game move
+            in
+                ( newGame, Cmd.none )
 
 
 subscriptions model =

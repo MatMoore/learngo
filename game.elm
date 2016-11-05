@@ -1,5 +1,6 @@
 module Game exposing (..)
 
+import Random
 import Dict exposing (Dict)
 import Array exposing (Array)
 
@@ -25,6 +26,7 @@ type alias Move =
 
 type GameMessage
     = UserPlay Point
+    | ComputerPlay Move
 
 
 type alias Board =
