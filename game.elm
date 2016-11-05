@@ -43,8 +43,22 @@ type alias MoveRecord =
 
 
 type GameRecord
-    = LastMove (Array MoveRecord) Int
+    = MoveSequence (List MoveRecord) MoveRecord (List MoveRecord)
     | NotStarted
+
+
+addMessage : Game -> String -> Game
+addMessage game msg =
+    case game.gameRecord of
+        NotStarted ->
+            game
+
+        MoveSequence prev current next ->
+            let
+                newRecord =
+                    MoveSequence prev { current | notes = msg :: current.notes } next
+            in
+                { game | gameRecord = newRecord }
 
 
 chatItems : Game -> List String
@@ -53,14 +67,14 @@ chatItems game =
         moveToChatItem moveRecord =
             case moveRecord.move of
                 ( White, Pass ) ->
-                    Just "White pass"
+                    "White pass" :: moveRecord.notes
 
                 _ ->
-                    Nothing
+                    moveRecord.notes
     in
         case game.gameRecord of
-            LastMove moveRecords idx ->
-                (List.filterMap moveToChatItem (Array.toList moveRecords))
+            MoveSequence prev current next ->
+                (List.concatMap moveToChatItem (prev ++ (current :: next)))
 
             _ ->
                 []
@@ -91,7 +105,7 @@ newGame boardSize =
     , boardStones = Dict.empty
     , capturedStones = Dict.empty
     , gameRecord = NotStarted
-    , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule ]
+    , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule ]
     , currentPlayer = Black
     , pendingMove = Nothing
     }
@@ -105,11 +119,11 @@ newMoveRecord move =
 pushMoveRecord : MoveRecord -> GameRecord -> GameRecord
 pushMoveRecord moveRecord gameRecord =
     case gameRecord of
-        LastMove moves idx ->
-            LastMove (Array.push moveRecord moves) (idx + 1)
+        MoveSequence prev current next ->
+            MoveSequence (prev ++ [ current ]) moveRecord []
 
         NotStarted ->
-            LastMove (Array.fromList [ moveRecord ]) 0
+            MoveSequence [] moveRecord []
 
 
 applyRules : Game -> Move -> Result String MoveInProgress
@@ -140,7 +154,7 @@ nextPlayer player =
             Black
 
 
-playMove : Game -> Move -> Game
+playMove : Game -> Move -> Result Game Game
 playMove game move =
     let
         result =
@@ -148,10 +162,10 @@ playMove game move =
     in
         case result of
             Ok moveInProgress ->
-                { game | boardStones = moveInProgress.provisionalBoard, gameRecord = pushMoveRecord (newMoveRecord move) game.gameRecord, currentPlayer = nextPlayer game.currentPlayer }
+                Ok { game | boardStones = moveInProgress.provisionalBoard, gameRecord = pushMoveRecord (newMoveRecord move) game.gameRecord, currentPlayer = nextPlayer game.currentPlayer }
 
-            _ ->
-                game
+            Err msg ->
+                Err (addMessage game msg)
 
 
 placePlayer : MoveInProgress -> Result String MoveInProgress
@@ -177,3 +191,23 @@ onePlayerPerTurnRule inProgress =
             Ok inProgress
         else
             Err "It's not your turn"
+
+
+oneStonePerPointRule : MoveInProgress -> Result String MoveInProgress
+oneStonePerPointRule inProgress =
+    let
+        ( player, action ) =
+            inProgress.currentMove
+
+        board =
+            inProgress.game.boardStones
+    in
+        case action of
+            Play point ->
+                if Dict.member point board then
+                    Err "You can't put a stone on top of another stone"
+                else
+                    Ok inProgress
+
+            _ ->
+                Ok inProgress

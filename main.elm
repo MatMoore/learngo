@@ -33,10 +33,15 @@ update msg game =
     case msg of
         UserPlay point ->
             let
-                newGame =
+                result =
                     playMove game ( Black, Play point )
             in
-                generateMove ( RandomStone, White ) newGame
+                case result of
+                    Ok newGame ->
+                        generateMove ( RandomStone, White ) newGame
+
+                    Err game ->
+                        ( game, Cmd.none )
 
         ComputerPlay move ->
             ( { game | pendingMove = Just move }, Cmd.none )
@@ -45,10 +50,15 @@ update msg game =
             case game.pendingMove of
                 Just move ->
                     let
-                        newGame =
+                        result =
                             playMove game move
                     in
-                        ( { newGame | pendingMove = Nothing }, Cmd.none )
+                        case result of
+                            Ok newGame ->
+                                ( { newGame | pendingMove = Nothing }, Cmd.none )
+
+                            Err game ->
+                                ( addMessage game "AI got confused :/", Cmd.none )
 
                 Nothing ->
                     ( game, Cmd.none )

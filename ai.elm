@@ -5,6 +5,7 @@ import Random
 import Maybe
 import Array
 import Dict
+import Task
 import Array exposing (Array)
 
 
@@ -21,11 +22,16 @@ type alias GameState =
     ( Game, Random.Seed )
 
 
+moveCommand : Move -> Cmd GameMessage
+moveCommand move =
+    Task.perform ComputerPlay ComputerPlay (Task.succeed move)
+
+
 generateMove : AI -> Game -> ( Game, Cmd GameMessage )
 generateMove ( strategy, player ) game =
     case strategy of
         AlwaysPass ->
-            ( playMove game ( player, Pass ), Cmd.none )
+            ( game, moveCommand ( player, Pass ) )
 
         RandomStone ->
             let
