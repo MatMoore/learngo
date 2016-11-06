@@ -1,8 +1,7 @@
-.PHONY=clean
+.PHONY=elm live
 
-docs/index.html: clean
-	mkdir -p docs
-	elm make main.elm --output docs/index.html
+elm:
+	elm make main.elm --output docs/elm.js
 
-clean:
-	rm -f docs/*
+live:
+	elm-live --open --dir=docs main.elm -- --output docs/elm.js
