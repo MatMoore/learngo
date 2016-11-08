@@ -1,29 +1,15 @@
 module Main exposing (..)
 
---import Html.App exposing (programWithFlags)
-
-import Html.App exposing (program)
+import Html.App exposing (programWithFlags)
 import Game exposing (..)
 import View exposing (view)
 import AI exposing (generateMove, Strategy(..))
 import Time exposing (millisecond)
 
 
-type alias Flags =
-    { size : Int }
-
-
-
---init : Flags -> ( Model, Cmd Msg )
---init flags =
---    ( { size = flags.size, stones = Dict.empty }
---    , Cmd.none
---    )
-
-
-init : ( Game, Cmd GameMessage )
-init =
-    ( newGame 9
+init : StartingStones -> ( Game, Cmd GameMessage )
+init startingStones =
+    ( newGameWithStones 9 startingStones
     , Cmd.none
     )
 
@@ -69,7 +55,7 @@ subscriptions model =
 
 
 main =
-    program
+    programWithFlags
         { init = init
         , view = view
         , update = update

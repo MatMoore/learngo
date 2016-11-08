@@ -8738,6 +8738,10 @@ var _user$project$Game$MoveInProgress = F3(
 	function (a, b, c) {
 		return {provisionalBoard: a, currentMove: b, game: c};
 	});
+var _user$project$Game$StartingStones = F2(
+	function (a, b) {
+		return {black: a, white: b};
+	});
 var _user$project$Game$White = {ctor: 'White'};
 var _user$project$Game$Black = {ctor: 'Black'};
 var _user$project$Game$nextPlayer = function (player) {
@@ -8852,6 +8856,27 @@ var _user$project$Game$newGame = function (boardSize) {
 		pendingMove: _elm_lang$core$Maybe$Nothing
 	};
 };
+var _user$project$Game$newGameWithStones = F2(
+	function (size, startingStones) {
+		var insertColor = F3(
+			function (color, stone, board) {
+				return A3(_elm_lang$core$Dict$insert, stone, color, board);
+			});
+		var game = _user$project$Game$newGame(size);
+		var boardWithBlack = A3(
+			_elm_lang$core$List$foldl,
+			insertColor(_user$project$Game$Black),
+			game.boardStones,
+			startingStones.black);
+		var boardWithBoth = A3(
+			_elm_lang$core$List$foldl,
+			insertColor(_user$project$Game$White),
+			boardWithBlack,
+			startingStones.white);
+		return _elm_lang$core$Native_Utils.update(
+			game,
+			{boardStones: boardWithBoth});
+	});
 
 var _user$project$AI$cartesian = F2(
 	function (xs, ys) {
@@ -9278,17 +9303,50 @@ var _user$project$Main$update = F2(
 				}
 		}
 	});
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: _user$project$Game$newGame(9),
-	_1: _elm_lang$core$Platform_Cmd$none
+var _user$project$Main$init = function (startingStones) {
+	return {
+		ctor: '_Tuple2',
+		_0: A2(_user$project$Game$newGameWithStones, 9, startingStones),
+		_1: _elm_lang$core$Platform_Cmd$none
+	};
 };
 var _user$project$Main$main = {
-	main: _elm_lang$html$Html_App$program(
-		{init: _user$project$Main$init, view: _user$project$View$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})
-};
-var _user$project$Main$Flags = function (a) {
-	return {size: a};
+	main: _elm_lang$html$Html_App$programWithFlags(
+		{init: _user$project$Main$init, view: _user$project$View$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions}),
+	flags: A2(
+		_elm_lang$core$Json_Decode$andThen,
+		A2(
+			_elm_lang$core$Json_Decode_ops[':='],
+			'black',
+			_elm_lang$core$Json_Decode$list(
+				A3(
+					_elm_lang$core$Json_Decode$tuple2,
+					F2(
+						function (x1, x2) {
+							return {ctor: '_Tuple2', _0: x1, _1: x2};
+						}),
+					_elm_lang$core$Json_Decode$int,
+					_elm_lang$core$Json_Decode$int))),
+		function (black) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				A2(
+					_elm_lang$core$Json_Decode_ops[':='],
+					'white',
+					_elm_lang$core$Json_Decode$list(
+						A3(
+							_elm_lang$core$Json_Decode$tuple2,
+							F2(
+								function (x1, x2) {
+									return {ctor: '_Tuple2', _0: x1, _1: x2};
+								}),
+							_elm_lang$core$Json_Decode$int,
+							_elm_lang$core$Json_Decode$int))),
+				function (white) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{black: black, white: white});
+				});
+		})
 };
 
 var Elm = {};

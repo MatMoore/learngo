@@ -111,6 +111,30 @@ newGame boardSize =
     }
 
 
+type alias StartingStones =
+    { black : List Point
+    , white : List Point
+    }
+
+
+newGameWithStones : Int -> StartingStones -> Game
+newGameWithStones size startingStones =
+    let
+        game =
+            newGame size
+
+        insertColor color stone board =
+            Dict.insert stone color board
+
+        boardWithBlack =
+            List.foldl (insertColor Black) game.boardStones startingStones.black
+
+        boardWithBoth =
+            List.foldl (insertColor White) boardWithBlack startingStones.white
+    in
+        { game | boardStones = boardWithBoth }
+
+
 newMoveRecord : Move -> MoveRecord
 newMoveRecord move =
     { move = move, notes = [] }

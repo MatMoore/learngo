@@ -29,6 +29,6 @@
 <script type="text/javascript">
     var placing_stones = document.getElementById('placing-stones');
     var liberties = document.getElementById('liberties');
-    Elm.Main.embed(placing_stones);
-    Elm.Main.embed(liberties);
+    Elm.Main.embed(placing_stones, {black: [], white: []});
+    Elm.Main.embed(liberties, {white: [[0, 0], [4, 4], [4, 0]], black: []});
 </script>
