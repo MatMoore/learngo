@@ -6,7 +6,7 @@ import Html
 import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Game exposing (Point, Game, Board, Player(..), GameMessage(..), chatItems)
+import Game exposing (Point, Game, Board, Player(..), GameMessage(..), chatItems, liberties)
 
 
 type alias BoardConfig =
@@ -146,6 +146,26 @@ starCircle config centre =
         []
 
 
+annotatePoint : BoardConfig -> SVGPoint -> String -> List (Svg a)
+annotatePoint config centre str =
+    [ circle
+        [ cx centre.x
+        , cy centre.y
+        , r "4"
+        , fill "dodgerblue"
+        ]
+        []
+    , text'
+        [ x centre.x
+        , y centre.y
+        , fontSize "6"
+        , textAnchor "middle"
+        , alignmentBaseline "central"
+        ]
+        [ text str ]
+    ]
+
+
 grid : BoardConfig -> List (Svg a)
 grid config =
     let
@@ -213,6 +233,18 @@ buttons config =
             allPoints
 
 
+annotate : BoardConfig -> Game -> List (Svg GameMessage)
+annotate config game =
+    let
+        annotateLiberty point =
+            annotatePoint config (boardPosition config point) "1"
+
+        annotateLiberties point =
+            List.concatMap annotateLiberty (liberties game point)
+    in
+        List.concatMap annotateLiberties (Dict.keys game.annotations)
+
+
 view : Game -> Html.Html GameMessage
 view model =
     Html.div
@@ -243,5 +275,6 @@ boardView model =
         ([]
             ++ (grid nineByNineConfig)
             ++ (stones nineByNineConfig model.boardStones)
+            ++ (annotate nineByNineConfig model)
             ++ (buttons nineByNineConfig)
         )

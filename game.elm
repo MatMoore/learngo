@@ -80,6 +80,10 @@ chatItems game =
                 []
 
 
+type Annotation
+    = LibertyCount
+
+
 type alias Game =
     { boardStones : Board
     , capturedStones : Dict Player Int
@@ -88,6 +92,7 @@ type alias Game =
     , currentPlayer : Player
     , rules : List Rule
     , pendingMove : Maybe Move
+    , annotations : Dict Point Annotation
     }
 
 
@@ -108,12 +113,14 @@ newGame boardSize =
     , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule ]
     , currentPlayer = Black
     , pendingMove = Nothing
+    , annotations = Dict.empty
     }
 
 
 type alias StartingStones =
     { black : List Point
     , white : List Point
+    , liberties : List Point
     }
 
 
@@ -131,8 +138,11 @@ newGameWithStones size startingStones =
 
         boardWithBoth =
             List.foldl (insertColor White) boardWithBlack startingStones.white
+
+        annotate point =
+            ( point, LibertyCount )
     in
-        { game | boardStones = boardWithBoth }
+        { game | boardStones = boardWithBoth, annotations = Dict.fromList (List.map annotate startingStones.liberties) }
 
 
 newMoveRecord : Move -> MoveRecord
@@ -235,3 +245,27 @@ oneStonePerPointRule inProgress =
 
             _ ->
                 Ok inProgress
+
+
+neighbours : Int -> Point -> List Point
+neighbours size point =
+    let
+        ( x, y ) =
+            point
+
+        possibles =
+            [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
+
+        fits ( x_, y_ ) =
+            (x_ >= 0) && (y_ >= 0) && (x_ < size) && (y_ < size)
+    in
+        List.filter fits possibles
+
+
+liberties : Game -> Point -> List Point
+liberties game point =
+    let
+        pointNeighbours =
+            (neighbours game.boardSize point)
+    in
+        List.filter (\point -> (Dict.get point game.boardStones) == Nothing) pointNeighbours
