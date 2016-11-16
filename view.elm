@@ -240,7 +240,7 @@ annotate config game =
             annotatePoint config (boardPosition config point) "1"
 
         annotateLiberties point =
-            List.concatMap annotateLiberty (liberties game point)
+            List.concatMap annotateLiberty (liberties game.boardStones game.boardSize point)
     in
         List.concatMap annotateLiberties (Dict.keys game.annotations)
 

@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import Array exposing (Array)
 import Maybe
 import Time exposing (Time)
+import Debug exposing (log)
 
 
 type Player
@@ -110,7 +111,7 @@ newGame boardSize =
     , boardStones = Dict.empty
     , capturedStones = Dict.empty
     , gameRecord = NotStarted
-    , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule ]
+    , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule, Rule captureRule ]
     , currentPlayer = Black
     , pendingMove = Nothing
     , annotations = Dict.empty
@@ -247,6 +248,48 @@ oneStonePerPointRule inProgress =
                 Ok inProgress
 
 
+captureRule : MoveInProgress -> Result String MoveInProgress
+captureRule inProgress =
+    let
+        ( player, action ) =
+            inProgress.currentMove
+
+        game =
+            inProgress.game
+    in
+        case action of
+            Play point ->
+                let
+                    newBoard =
+                        removeDead game.boardSize inProgress.provisionalBoard point
+                in
+                    Ok { inProgress | provisionalBoard = newBoard }
+
+            _ ->
+                Ok inProgress
+
+
+removeDead : Int -> Board -> Point -> Board
+removeDead size board origin =
+    let
+        isFilled : Point -> Bool
+        isFilled point =
+            Dict.member point board
+
+        candidates : List Point
+        candidates =
+            List.filter isFilled (neighbours size origin)
+
+        removeOne : Point -> Board -> Board
+        removeOne point board =
+            if List.isEmpty (liberties board size point) then
+                Dict.remove point board
+            else
+                board
+    in
+        List.foldl removeOne board candidates
+
+
 neighbours : Int -> Point -> List Point
 neighbours size point =
     let
@@ -262,10 +305,10 @@ neighbours size point =
         List.filter fits possibles
 
 
-liberties : Game -> Point -> List Point
-liberties game point =
+liberties : Board -> Int -> Point -> List Point
+liberties board size point =
     let
         pointNeighbours =
-            (neighbours game.boardSize point)
+            (neighbours size point)
     in
-        List.filter (\point -> (Dict.get point game.boardStones) == Nothing) pointNeighbours
+        List.filter (\point -> (Dict.get point board) == Nothing) pointNeighbours
