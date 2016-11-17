@@ -1,6 +1,7 @@
 module AI exposing (AI, generateMove, Strategy(..))
 
-import Game exposing (Game, Move, Player, Action(..), playMove, GameMessage(..), Point)
+import Board exposing (Player, Point)
+import Game exposing (Game, Move, Action(..), playMove, GameMessage(..))
 import Random
 import Maybe
 import Array
@@ -67,20 +68,9 @@ moveGenerator defaultMove possibleMoves =
 
 getFreeSpaces : Game -> Array Point
 getFreeSpaces game =
-    let
-        allPoints =
-            cartesian [0..game.boardSize - 1] [0..game.boardSize - 1]
-    in
-        Array.fromList (List.filter (pointIsEmpty game) allPoints)
+    Array.fromList (List.filter (pointIsEmpty game) (Board.points game.board))
 
 
 pointIsEmpty : Game -> Point -> Bool
 pointIsEmpty game point =
-    not (Dict.member point game.boardStones)
-
-
-cartesian : List a -> List b -> List ( a, b )
-cartesian xs ys =
-    List.concatMap
-        (\x -> List.map (\y -> ( x, y )) ys)
-        xs
+    not (Board.isFilled point game.board)

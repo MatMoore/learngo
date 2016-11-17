@@ -6,15 +6,7 @@ import Array exposing (Array)
 import Maybe
 import Time exposing (Time)
 import Debug exposing (log)
-
-
-type Player
-    = Black
-    | White
-
-
-type alias Point =
-    ( Int, Int )
+import Board exposing (Player(..), Point, Board, Annotation(..))
 
 
 type Action
@@ -31,10 +23,6 @@ type GameMessage
     = UserPlay Point
     | ComputerPlay Move
     | Tick Time
-
-
-type alias Board =
-    Dict Point Player
 
 
 type alias MoveRecord =
@@ -81,19 +69,13 @@ chatItems game =
                 []
 
 
-type Annotation
-    = LibertyCount
-
-
 type alias Game =
-    { boardStones : Board
+    { board : Board
     , capturedStones : Dict Player Int
-    , boardSize : Int
     , gameRecord : GameRecord
     , currentPlayer : Player
     , rules : List Rule
     , pendingMove : Maybe Move
-    , annotations : Dict Point Annotation
     }
 
 
@@ -107,14 +89,12 @@ type Rule
 
 newGame : Int -> Game
 newGame boardSize =
-    { boardSize = boardSize
-    , boardStones = Dict.empty
+    { board = Board.new boardSize
     , capturedStones = Dict.empty
     , gameRecord = NotStarted
     , rules = [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule, Rule captureRule ]
     , currentPlayer = Black
     , pendingMove = Nothing
-    , annotations = Dict.empty
     }
 
 
@@ -131,19 +111,19 @@ newGameWithStones size startingStones =
         game =
             newGame size
 
-        insertColor color stone board =
-            Dict.insert stone color board
-
         boardWithBlack =
-            List.foldl (insertColor Black) game.boardStones startingStones.black
+            List.foldl (Board.place Black) game.board startingStones.black
 
         boardWithBoth =
-            List.foldl (insertColor White) boardWithBlack startingStones.white
+            List.foldl (Board.place White) boardWithBlack startingStones.white
 
         annotate point =
             ( point, LibertyCount )
+
+        board =
+            Board.annotateMany LibertyCount startingStones.liberties boardWithBoth
     in
-        { game | boardStones = boardWithBoth, annotations = Dict.fromList (List.map annotate startingStones.liberties) }
+        { game | board = board }
 
 
 newMoveRecord : Move -> MoveRecord
@@ -166,7 +146,7 @@ applyRules game move =
     let
         initial : Result String MoveInProgress
         initial =
-            Ok { provisionalBoard = game.boardStones, currentMove = move, game = game }
+            Ok { provisionalBoard = game.board, currentMove = move, game = game }
 
         foldStep (Rule rule) result =
             case result of
@@ -197,7 +177,7 @@ playMove game move =
     in
         case result of
             Ok moveInProgress ->
-                Ok { game | boardStones = moveInProgress.provisionalBoard, gameRecord = pushMoveRecord (newMoveRecord move) game.gameRecord, currentPlayer = nextPlayer game.currentPlayer }
+                Ok { game | board = moveInProgress.provisionalBoard, gameRecord = pushMoveRecord (newMoveRecord move) game.gameRecord, currentPlayer = nextPlayer game.currentPlayer }
 
             Err msg ->
                 Err (addMessage game msg)
@@ -206,10 +186,10 @@ playMove game move =
 placePlayer : MoveInProgress -> Result String MoveInProgress
 placePlayer inProgress =
     case inProgress.currentMove of
-        ( stone, Play point ) ->
+        ( player, Play point ) ->
             Ok
                 { inProgress
-                    | provisionalBoard = (Dict.insert point stone inProgress.provisionalBoard)
+                    | provisionalBoard = Board.place player point inProgress.provisionalBoard
                 }
 
         _ ->
@@ -235,11 +215,11 @@ oneStonePerPointRule inProgress =
             inProgress.currentMove
 
         board =
-            inProgress.game.boardStones
+            inProgress.game.board
     in
         case action of
             Play point ->
-                if Dict.member point board then
+                if Board.isFilled point board then
                     Err "You can't put a stone on top of another stone"
                 else
                     Ok inProgress
@@ -261,54 +241,9 @@ captureRule inProgress =
             Play point ->
                 let
                     newBoard =
-                        removeDead game.boardSize inProgress.provisionalBoard point
+                        Board.removeDeadNeighbors inProgress.provisionalBoard point
                 in
                     Ok { inProgress | provisionalBoard = newBoard }
 
             _ ->
                 Ok inProgress
-
-
-removeDead : Int -> Board -> Point -> Board
-removeDead size board origin =
-    let
-        isFilled : Point -> Bool
-        isFilled point =
-            Dict.member point board
-
-        candidates : List Point
-        candidates =
-            List.filter isFilled (neighbours size origin)
-
-        removeOne : Point -> Board -> Board
-        removeOne point board =
-            if List.isEmpty (liberties board size point) then
-                Dict.remove point board
-            else
-                board
-    in
-        List.foldl removeOne board candidates
-
-
-neighbours : Int -> Point -> List Point
-neighbours size point =
-    let
-        ( x, y ) =
-            point
-
-        possibles =
-            [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
-
-        fits ( x_, y_ ) =
-            (x_ >= 0) && (y_ >= 0) && (x_ < size) && (y_ < size)
-    in
-        List.filter fits possibles
-
-
-liberties : Board -> Int -> Point -> List Point
-liberties board size point =
-    let
-        pointNeighbours =
-            (neighbours size point)
-    in
-        List.filter (\point -> (Dict.get point board) == Nothing) pointNeighbours

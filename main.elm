@@ -5,6 +5,7 @@ import Game exposing (..)
 import View exposing (view)
 import AI exposing (generateMove, Strategy(..))
 import Time exposing (millisecond)
+import Board exposing (Player(..))
 
 
 init : StartingStones -> ( Game, Cmd GameMessage )

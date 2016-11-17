@@ -6,7 +6,8 @@ import Html
 import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Game exposing (Point, Game, Board, Player(..), GameMessage(..), chatItems, liberties)
+import Game exposing (Game, GameMessage(..), chatItems)
+import Board exposing (Point, Board, Player(..), liberties)
 
 
 type alias BoardConfig =
@@ -198,16 +199,18 @@ grid config =
 stones : BoardConfig -> Board -> List (Svg a)
 stones config board =
     let
-        viewPlayer point stone =
+        addStone : ( Point, Player ) -> List (Svg a) -> List (Svg a)
+        addStone ( point, player ) elements =
+            (viewPlayer point player) :: elements
+
+        viewPlayer : Point -> Player -> Svg a
+        viewPlayer point player =
             stoneCircle
                 config
                 (boardPosition config point)
-                { fillColor = (stoneColor stone), onClick = Nothing }
+                { fillColor = (stoneColor player), onClick = Nothing }
     in
-        Dict.foldl
-            (\point stone result -> (viewPlayer point stone) :: result)
-            []
-            board
+        List.foldl addStone [] (Board.stones board)
 
 
 buttons : BoardConfig -> List (Svg GameMessage)
@@ -233,16 +236,16 @@ buttons config =
             allPoints
 
 
-annotate : BoardConfig -> Game -> List (Svg GameMessage)
-annotate config game =
+annotate : BoardConfig -> Board -> List (Svg GameMessage)
+annotate config board =
     let
         annotateLiberty point =
             annotatePoint config (boardPosition config point) "1"
 
-        annotateLiberties point =
-            List.concatMap annotateLiberty (liberties game.boardStones game.boardSize point)
+        annotateLiberties ( point, _ ) =
+            List.concatMap annotateLiberty (liberties point board)
     in
-        List.concatMap annotateLiberties (Dict.keys game.annotations)
+        List.concatMap annotateLiberties (Board.annotations board)
 
 
 view : Game -> Html.Html GameMessage
@@ -269,12 +272,12 @@ chatItemView item =
 
 
 boardView : Game -> Html.Html GameMessage
-boardView model =
+boardView game =
     svg
         [ width "300", height "300", viewBox "0 0 100 100" ]
         ([]
             ++ (grid nineByNineConfig)
-            ++ (stones nineByNineConfig model.boardStones)
-            ++ (annotate nineByNineConfig model)
+            ++ (stones nineByNineConfig game.board)
+            ++ (annotate nineByNineConfig game.board)
             ++ (buttons nineByNineConfig)
         )
