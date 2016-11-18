@@ -135,9 +135,9 @@ stones (SquareGrid _ result _) =
 
 {-| List all the points on the board, regardless of whether there are stones on them.
 -}
-points : Board -> List (Point)
+points : Board -> List Point
 points (SquareGrid size _ _) =
-    cartesian [0..size - 1] [0..size - 1]
+    cartesian (List.range 0 (size - 1)) (List.range 0 (size - 1))
 
 
 cartesian : List a -> List b -> List ( a, b )

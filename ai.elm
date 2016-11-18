@@ -25,7 +25,7 @@ type alias GameState =
 
 moveCommand : Move -> Cmd GameMessage
 moveCommand move =
-    Task.perform ComputerPlay ComputerPlay (Task.succeed move)
+    Task.perform ComputerPlay (Task.succeed move)
 
 
 generateMove : AI -> Game -> ( Game, Cmd GameMessage )

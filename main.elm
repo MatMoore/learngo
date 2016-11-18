@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html.App exposing (programWithFlags)
+import Html exposing (programWithFlags)
 import Game exposing (..)
 import View exposing (view)
 import AI exposing (generateMove, Strategy(..))

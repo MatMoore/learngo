@@ -156,7 +156,7 @@ annotatePoint config centre str =
         , fill "dodgerblue"
         ]
         []
-    , text'
+    , text_
         [ x centre.x
         , y centre.y
         , fontSize "6"
@@ -177,16 +177,16 @@ grid config =
             toString (100 - (2 * config.padding))
 
         linePositions =
-            [0..(config.size - 1)]
+            List.range 0 (config.size - 1)
 
         verticalLines =
-            map (verticalLine config) linePositions
+            List.map (verticalLine config) linePositions
 
         horizontalLines =
-            map (horizontalLine config) linePositions
+            List.map (horizontalLine config) linePositions
 
         stars =
-            map ((boardPosition config) >> (starCircle config)) config.stars
+            List.map ((boardPosition config) >> (starCircle config)) config.stars
 
         background =
             rect
@@ -217,7 +217,7 @@ buttons : BoardConfig -> List (Svg GameMessage)
 buttons config =
     let
         numbers =
-            [0..(config.size - 1)]
+            List.range 0 (config.size - 1)
 
         allPoints =
             List.concatMap
