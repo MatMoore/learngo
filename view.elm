@@ -6,7 +6,8 @@ import Html
 import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Game exposing (Game, GameMessage(..), chatItems)
+import Game.Types exposing (Game, GameMessage(..))
+import Game.Record exposing (chatItems)
 import Board exposing (Point, Board, Player(..), liberties)
 
 

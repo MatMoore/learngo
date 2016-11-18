@@ -1,4 +1,22 @@
-module Board exposing (Point, Player(..), Annotation(..), Board, new, place, remove, annotate, annotateMany, removeDeadNeighbors, isFilled, liberties, annotations, stones, points)
+module Board
+    exposing
+        ( Point
+        , Player(..)
+        , Annotation(..)
+        , Board
+        , nextPlayer
+        , new
+        , place
+        , remove
+        , annotate
+        , annotateMany
+        , removeDeadNeighbors
+        , isFilled
+        , liberties
+        , annotations
+        , stones
+        , points
+        )
 
 {-| This module models a standard Go board and the stones a player places on it.
 -}
@@ -11,6 +29,18 @@ import Dict exposing (Dict)
 type Player
     = Black
     | White
+
+
+{-| Next player defines the turn order
+-}
+nextPlayer : Player -> Player
+nextPlayer player =
+    case player of
+        Black ->
+            White
+
+        White ->
+            Black
 
 
 {-| A point is supposed to reference somewhere a stone can be placed on the board. We don't strictly enforce the bounds of Points.

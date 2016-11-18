@@ -1,7 +1,7 @@
 module AI exposing (AI, generateMove, Strategy(..))
 
 import Board exposing (Player, Point)
-import Game exposing (Game, Move, Action(..), playMove, GameMessage(..))
+import Game.Types exposing (Game, Move, Action(..), GameMessage(..))
 import Random
 import Maybe
 import Array
