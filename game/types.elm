@@ -50,5 +50,4 @@ type alias Game =
     , gameRecord : GameRecord
     , currentPlayer : Player
     , rules : Ruleset
-    , pendingMove : Maybe Move
     }

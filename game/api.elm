@@ -14,7 +14,6 @@ new boardSize =
     , gameRecord = NotStarted
     , rules = defaultRuleset
     , currentPlayer = Black
-    , pendingMove = Nothing
     }
 
 

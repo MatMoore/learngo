@@ -9,6 +9,7 @@ import Svg.Attributes exposing (..)
 import Game.Types exposing (Game, GameMessage(..))
 import Game.Record exposing (chatItems)
 import Board exposing (Point, Board, Player(..), liberties)
+import Types exposing (..)
 
 
 type alias BoardConfig =
@@ -249,12 +250,12 @@ annotate config board =
         List.concatMap annotateLiberties (Board.annotations board)
 
 
-view : Game -> Html.Html GameMessage
+view : Model -> Html.Html GameMessage
 view model =
     Html.div
         []
-        [ boardView model
-        , chatView model
+        [ boardView model.game
+        , chatView model.game
         ]
 
 

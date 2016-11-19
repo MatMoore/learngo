@@ -9100,9 +9100,9 @@ var _user$project$Game_Types$MoveRecord = F2(
 	function (a, b) {
 		return {move: a, notes: b};
 	});
-var _user$project$Game_Types$Game = F6(
-	function (a, b, c, d, e, f) {
-		return {board: a, capturedStones: b, gameRecord: c, currentPlayer: d, rules: e, pendingMove: f};
+var _user$project$Game_Types$Game = F5(
+	function (a, b, c, d, e) {
+		return {board: a, capturedStones: b, gameRecord: c, currentPlayer: d, rules: e};
 	});
 var _user$project$Game_Types$Rule = function (a) {
 	return {ctor: 'Rule', _0: a};
@@ -9156,39 +9156,47 @@ var _user$project$AI$moveCommand = function (move) {
 		_user$project$Game_Types$ComputerPlay,
 		_elm_lang$core$Task$succeed(move));
 };
-var _user$project$AI$generateMove = F2(
-	function (_p0, game) {
-		var _p1 = _p0;
-		var _p3 = _p1._1;
-		var _p2 = _p1._0;
-		if (_p2.ctor === 'AlwaysPass') {
-			return {
-				ctor: '_Tuple2',
-				_0: game,
-				_1: _user$project$AI$moveCommand(
-					{ctor: '_Tuple2', _0: _p3, _1: _user$project$Game_Types$Pass})
-			};
+var _user$project$AI$generateMove = F3(
+	function (strategy, player, game) {
+		var _p0 = strategy;
+		if (_p0.ctor === 'Just') {
+			if (_p0._0.ctor === 'AlwaysPass') {
+				return _user$project$AI$moveCommand(
+					{ctor: '_Tuple2', _0: player, _1: _user$project$Game_Types$Pass});
+			} else {
+				var possibleMoves = A2(
+					_elm_lang$core$Array$map,
+					function (point) {
+						return {
+							ctor: '_Tuple2',
+							_0: player,
+							_1: _user$project$Game_Types$Play(point)
+						};
+					},
+					_user$project$AI$getFreeSpaces(game));
+				var generator = A2(
+					_user$project$AI$moveGenerator,
+					{ctor: '_Tuple2', _0: player, _1: _user$project$Game_Types$Pass},
+					possibleMoves);
+				return A2(_elm_lang$core$Random$generate, _user$project$Game_Types$ComputerPlay, generator);
+			}
 		} else {
-			var possibleMoves = A2(
-				_elm_lang$core$Array$map,
-				function (point) {
-					return {
-						ctor: '_Tuple2',
-						_0: _p3,
-						_1: _user$project$Game_Types$Play(point)
-					};
-				},
-				_user$project$AI$getFreeSpaces(game));
-			var generator = A2(
-				_user$project$AI$moveGenerator,
-				{ctor: '_Tuple2', _0: _p3, _1: _user$project$Game_Types$Pass},
-				possibleMoves);
-			var cmd = A2(_elm_lang$core$Random$generate, _user$project$Game_Types$ComputerPlay, generator);
-			return {ctor: '_Tuple2', _0: game, _1: cmd};
+			return _elm_lang$core$Platform_Cmd$none;
 		}
 	});
 var _user$project$AI$RandomStone = {ctor: 'RandomStone'};
 var _user$project$AI$AlwaysPass = {ctor: 'AlwaysPass'};
+var _user$project$AI$getStrategy = function (name) {
+	var _p1 = name;
+	switch (_p1) {
+		case 'always-pass':
+			return _elm_lang$core$Maybe$Just(_user$project$AI$AlwaysPass);
+		case 'random-stone':
+			return _elm_lang$core$Maybe$Just(_user$project$AI$RandomStone);
+		default:
+			return _elm_lang$core$Maybe$Nothing;
+	}
+};
 
 var _user$project$Game_Rules$captureRule = function (inProgress) {
 	var game = inProgress.game;
@@ -9371,10 +9379,18 @@ var _user$project$Game_Api$new = function (boardSize) {
 		capturedStones: _elm_lang$core$Dict$empty,
 		gameRecord: _user$project$Game_Types$NotStarted,
 		rules: _user$project$Game_Rules$defaultRuleset,
-		currentPlayer: _user$project$Board$Black,
-		pendingMove: _elm_lang$core$Maybe$Nothing
+		currentPlayer: _user$project$Board$Black
 	};
 };
+
+var _user$project$Types$Flags = F4(
+	function (a, b, c, d) {
+		return {black: a, white: b, liberties: c, strategy: d};
+	});
+var _user$project$Types$Model = F3(
+	function (a, b, c) {
+		return {game: a, strategy: b, pendingMove: c};
+	});
 
 var _user$project$View$chatItemView = function (item) {
 	return A2(
@@ -9801,10 +9817,10 @@ var _user$project$View$view = function (model) {
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _user$project$View$boardView(model),
+			_0: _user$project$View$boardView(model.game),
 			_1: {
 				ctor: '::',
-				_0: _user$project$View$chatView(model),
+				_0: _user$project$View$chatView(model.game),
 				_1: {ctor: '[]'}
 			}
 		});
@@ -9818,32 +9834,34 @@ var _user$project$View$SVGPoint = F2(
 		return {x: a, y: b};
 	});
 
-var _user$project$Main$newGameWithStones = F2(
-	function (size, startingStones) {
-		var annotate = function (point) {
-			return {ctor: '_Tuple2', _0: point, _1: _user$project$Board$LibertyCount};
-		};
-		var game = _user$project$Game_Api$new(size);
-		var boardWithBlack = A3(
-			_elm_lang$core$List$foldl,
-			_user$project$Board$place(_user$project$Board$Black),
-			game.board,
-			startingStones.black);
-		var boardWithBoth = A3(
-			_elm_lang$core$List$foldl,
-			_user$project$Board$place(_user$project$Board$White),
-			boardWithBlack,
-			startingStones.white);
-		var board = A3(_user$project$Board$annotateMany, _user$project$Board$LibertyCount, startingStones.liberties, boardWithBoth);
-		return _elm_lang$core$Native_Utils.update(
-			game,
-			{board: board});
-	});
+var _user$project$Main$newModelFromFlags = function (flags) {
+	var strategy = _user$project$AI$getStrategy(flags.strategy);
+	var annotate = function (point) {
+		return {ctor: '_Tuple2', _0: point, _1: _user$project$Board$LibertyCount};
+	};
+	var size = 9;
+	var game = _user$project$Game_Api$new(size);
+	var boardWithBlack = A3(
+		_elm_lang$core$List$foldl,
+		_user$project$Board$place(_user$project$Board$Black),
+		game.board,
+		flags.black);
+	var boardWithBoth = A3(
+		_elm_lang$core$List$foldl,
+		_user$project$Board$place(_user$project$Board$White),
+		boardWithBlack,
+		flags.white);
+	var board = A3(_user$project$Board$annotateMany, _user$project$Board$LibertyCount, flags.liberties, boardWithBoth);
+	var newGame = _elm_lang$core$Native_Utils.update(
+		game,
+		{board: board});
+	return {game: newGame, strategy: strategy, pendingMove: _elm_lang$core$Maybe$Nothing};
+};
 var _user$project$Main$subscriptions = function (model) {
 	return A2(_elm_lang$core$Time$every, 500 * _elm_lang$core$Time$millisecond, _user$project$Game_Types$Tick);
 };
 var _user$project$Main$update = F2(
-	function (msg, game) {
+	function (msg, model) {
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'UserPlay':
@@ -9854,60 +9872,61 @@ var _user$project$Main$update = F2(
 						_0: _user$project$Board$Black,
 						_1: _user$project$Game_Types$Play(_p0._0)
 					},
-					game);
+					model.game);
 				var _p1 = result;
 				if (_p1.ctor === 'Ok') {
-					return A2(
-						_user$project$AI$generateMove,
-						{ctor: '_Tuple2', _0: _user$project$AI$RandomStone, _1: _user$project$Board$White},
-						_p1._0);
+					var _p2 = _p1._0;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{game: _p2}),
+						_1: A3(_user$project$AI$generateMove, model.strategy, _user$project$Board$White, _p2)
+					};
 				} else {
-					return {ctor: '_Tuple2', _0: _p1._0, _1: _elm_lang$core$Platform_Cmd$none};
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{game: _p1._0}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				}
 			case 'ComputerPlay':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
-						game,
+						model,
 						{
 							pendingMove: _elm_lang$core$Maybe$Just(_p0._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				var _p2 = game.pendingMove;
-				if (_p2.ctor === 'Just') {
-					var result = A2(_user$project$Game_Api$play, _p2._0, game);
-					var _p3 = result;
-					if (_p3.ctor === 'Ok') {
+				var _p3 = model.pendingMove;
+				if (_p3.ctor === 'Just') {
+					var result = A2(_user$project$Game_Api$play, _p3._0, model.game);
+					var _p4 = result;
+					if (_p4.ctor === 'Ok') {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
-								_p3._0,
-								{pendingMove: _elm_lang$core$Maybe$Nothing}),
+								model,
+								{game: _p4._0, pendingMove: _elm_lang$core$Maybe$Nothing}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					} else {
-						var _p4 = _p3._0;
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								_p4,
-								{
-									gameRecord: A2(_user$project$Game_Record$addMessage, _p4.gameRecord, 'AI got confused :/')
-								}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
+						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 					}
 				} else {
-					return {ctor: '_Tuple2', _0: game, _1: _elm_lang$core$Platform_Cmd$none};
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
 		}
 	});
-var _user$project$Main$init = function (startingStones) {
+var _user$project$Main$init = function (flags) {
 	return {
 		ctor: '_Tuple2',
-		_0: A2(_user$project$Main$newGameWithStones, 9, startingStones),
+		_0: _user$project$Main$newModelFromFlags(flags),
 		_1: _elm_lang$core$Platform_Cmd$none
 	};
 };
@@ -9921,26 +9940,31 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 				function (liberties) {
 					return A2(
 						_elm_lang$core$Json_Decode$andThen,
-						function (white) {
-							return _elm_lang$core$Json_Decode$succeed(
-								{black: black, liberties: liberties, white: white});
-						},
-						A2(
-							_elm_lang$core$Json_Decode$field,
-							'white',
-							_elm_lang$core$Json_Decode$list(
+						function (strategy) {
+							return A2(
+								_elm_lang$core$Json_Decode$andThen,
+								function (white) {
+									return _elm_lang$core$Json_Decode$succeed(
+										{black: black, liberties: liberties, strategy: strategy, white: white});
+								},
 								A2(
-									_elm_lang$core$Json_Decode$andThen,
-									function (x0) {
-										return A2(
+									_elm_lang$core$Json_Decode$field,
+									'white',
+									_elm_lang$core$Json_Decode$list(
+										A2(
 											_elm_lang$core$Json_Decode$andThen,
-											function (x1) {
-												return _elm_lang$core$Json_Decode$succeed(
-													{ctor: '_Tuple2', _0: x0, _1: x1});
+											function (x0) {
+												return A2(
+													_elm_lang$core$Json_Decode$andThen,
+													function (x1) {
+														return _elm_lang$core$Json_Decode$succeed(
+															{ctor: '_Tuple2', _0: x0, _1: x1});
+													},
+													A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
 											},
-											A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
-									},
-									A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+											A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int)))));
+						},
+						A2(_elm_lang$core$Json_Decode$field, 'strategy', _elm_lang$core$Json_Decode$string));
 				},
 				A2(
 					_elm_lang$core$Json_Decode$field,
@@ -9975,10 +9999,6 @@ var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 							A2(_elm_lang$core$Json_Decode$index, 1, _elm_lang$core$Json_Decode$int));
 					},
 					A2(_elm_lang$core$Json_Decode$index, 0, _elm_lang$core$Json_Decode$int))))));
-var _user$project$Main$StartingStones = F3(
-	function (a, b, c) {
-		return {black: a, white: b, liberties: c};
-	});
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};

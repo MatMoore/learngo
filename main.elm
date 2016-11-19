@@ -3,86 +3,90 @@ module Main exposing (..)
 import Html exposing (programWithFlags)
 import Game.Api as Game
 import Game.Types exposing (..)
+import Types exposing (..)
 import View exposing (view)
-import AI exposing (generateMove, Strategy(..))
+import AI exposing (generateMove, Strategy, getStrategy)
 import Time exposing (millisecond)
 import Board exposing (Player(..), Annotation(..), Point)
 import Game.Record exposing (addMessage)
 
 
-init : StartingStones -> ( Game, Cmd GameMessage )
-init startingStones =
-    ( newGameWithStones 9 startingStones
+init : Flags -> ( Model, Cmd GameMessage )
+init flags =
+    ( newModelFromFlags flags
     , Cmd.none
     )
 
 
-update : GameMessage -> Game -> ( Game, Cmd GameMessage )
-update msg game =
+update : GameMessage -> Model -> ( Model, Cmd GameMessage )
+update msg model =
     case msg of
         UserPlay point ->
             let
                 result =
-                    Game.play ( Black, Play point ) game
+                    Game.play ( Black, Play point ) model.game
             in
                 case result of
                     Ok newGame ->
-                        generateMove ( RandomStone, White ) newGame
+                        ( { model | game = newGame }, generateMove model.strategy White newGame )
 
                     Err game ->
-                        ( game, Cmd.none )
+                        ( { model | game = game }, Cmd.none )
 
         ComputerPlay move ->
-            ( { game | pendingMove = Just move }, Cmd.none )
+            ( { model | pendingMove = Just move }, Cmd.none )
 
         Tick time ->
-            case game.pendingMove of
+            case model.pendingMove of
                 Just move ->
                     let
                         result =
-                            Game.play move game
+                            Game.play move model.game
                     in
                         case result of
                             Ok newGame ->
-                                ( { newGame | pendingMove = Nothing }, Cmd.none )
+                                ( { model | game = newGame, pendingMove = Nothing }, Cmd.none )
 
                             Err game ->
-                                ( { game | gameRecord = addMessage game.gameRecord "AI got confused :/" }, Cmd.none )
+                                {--( { game | gameRecord = addMessage game.gameRecord "AI got confused :/" }, Cmd.none ) --}
+                                ( model, Cmd.none )
 
                 Nothing ->
-                    ( game, Cmd.none )
+                    ( model, Cmd.none )
 
 
 subscriptions model =
     Time.every (500 * millisecond) Tick
 
 
-type alias StartingStones =
-    { black : List Point
-    , white : List Point
-    , liberties : List Point
-    }
-
-
-newGameWithStones : Int -> StartingStones -> Game
-newGameWithStones size startingStones =
+newModelFromFlags : Flags -> Model
+newModelFromFlags flags =
     let
+        size =
+            9
+
         game =
             Game.new size
 
         boardWithBlack =
-            List.foldl (Board.place Black) game.board startingStones.black
+            List.foldl (Board.place Black) game.board flags.black
 
         boardWithBoth =
-            List.foldl (Board.place White) boardWithBlack startingStones.white
+            List.foldl (Board.place White) boardWithBlack flags.white
 
         annotate point =
             ( point, LibertyCount )
 
         board =
-            Board.annotateMany LibertyCount startingStones.liberties boardWithBoth
+            Board.annotateMany LibertyCount flags.liberties boardWithBoth
+
+        newGame =
+            { game | board = board }
+
+        strategy =
+            getStrategy flags.strategy
     in
-        { game | board = board }
+        { game = newGame, strategy = strategy, pendingMove = Nothing }
 
 
 main =

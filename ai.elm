@@ -1,4 +1,4 @@
-module AI exposing (AI, generateMove, Strategy(..))
+module AI exposing (Strategy, generateMove, getStrategy)
 
 import Board exposing (Player, Point)
 import Game.Types exposing (Game, Move, Action(..), GameMessage(..))
@@ -15,12 +15,21 @@ type Strategy
     | RandomStone
 
 
-type alias AI =
-    ( Strategy, Player )
-
-
 type alias GameState =
     ( Game, Random.Seed )
+
+
+getStrategy : String -> Maybe Strategy
+getStrategy name =
+    case name of
+        "always-pass" ->
+            Just AlwaysPass
+
+        "random-stone" ->
+            Just RandomStone
+
+        _ ->
+            Nothing
 
 
 moveCommand : Move -> Cmd GameMessage
@@ -28,24 +37,24 @@ moveCommand move =
     Task.perform ComputerPlay (Task.succeed move)
 
 
-generateMove : AI -> Game -> ( Game, Cmd GameMessage )
-generateMove ( strategy, player ) game =
+generateMove : Maybe Strategy -> Player -> Game -> Cmd GameMessage
+generateMove strategy player game =
     case strategy of
-        AlwaysPass ->
-            ( game, moveCommand ( player, Pass ) )
+        Just AlwaysPass ->
+            moveCommand ( player, Pass )
 
-        RandomStone ->
+        Just RandomStone ->
             let
                 possibleMoves =
                     Array.map (\point -> ( player, Play point )) (getFreeSpaces game)
 
                 generator =
                     moveGenerator ( player, Pass ) possibleMoves
-
-                cmd =
-                    Random.generate ComputerPlay generator
             in
-                ( game, cmd )
+                Random.generate ComputerPlay generator
+
+        Nothing ->
+            Cmd.none
 
 
 moveGenerator : Move -> Array Move -> Random.Generator Move
