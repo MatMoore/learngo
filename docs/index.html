@@ -8,7 +8,7 @@
 <section>
 <p>Go is a 2-player strategy game with a few simple rules.</p>
 <p>One player takes black stones, and the other takes white. The black player always goes first, unless they are playing the game with a handicap.</p>
-<p>In this interactive tutorial, you'll be playing as black. Professional Go is played on a 19x19 grid, but to learn the rules, we'll use a smaller 9x9 grid.</p>
+<p>In this interactive tutorial, you'll be playing as black. Go is normally played on a 19x19 grid, but a smaller 9x9 grid is easier to start with.</p>
 </section>
 <section>
     <h1>Take turns to place a stone on the board</h1>
@@ -18,17 +18,24 @@
 <div id="placing-stones"/>
 </section>
 <section>
-    <h1>Each empty point next to a stone is one "liberty"</h1>
-    <p>Each point on the board is connected by lines to 2, 3 or 4 other points (depending if it is a corner, side, or middle point). If any of those connecting points are empty, each one counts as one <em>liberty</em> for that stone.</p>
-    <p>You can take away liberties of your opponent's stone by placing your stones on those points.</p>
-    <p>When an opponent's stone has no liberties unfilled, you've captured it, and you remove that stone from the board.</p>
+    <h1>Surround stones to capture them</h1>
+    <p>Each point on the board is connected by lines to 2, 3 or 4 other points (depending on if it is a corner, side, or middle point). If any of those connecting points are empty, each one counts as one <em>liberty</em> for that stone.</p>
+    <p>You can take away a liberty of an opponent's stone by placing a stone on it.</p>
+    <p>When an opponent's stone has no liberties unfilled, you've captured it, and you remove the captured stone from the board.</p>
     <div id="liberties"/>
+</section>
+<section>
+    <h1>Connected stones are harder to capture</h1>
+    <p>Stones connect with neighboring stones of the same color.</p>
+    <p>When stones connect, they share liberties, so you need to surround the whole group to capture the stones, rather than surrounding one at a time.</p>
+    <div id="liberties2"/>
 </section>
 <script type="text/javascript" src="elm.js"></script>
 
 <script type="text/javascript">
     var placing_stones = document.getElementById('placing-stones');
     var liberties = document.getElementById('liberties');
+    var liberties2 = document.getElementById('liberties2');
     Elm.Main.embed(placing_stones, {black: [], white: [], liberties: [], strategy: "random-stone"});
     Elm.Main.embed(
         liberties,
@@ -39,4 +46,14 @@
             strategy: "always-pass"
         }
     );
+    Elm.Main.embed(
+        liberties2,
+        {
+            white: [[6, 6], [7, 8], [7, 7], [4, 3], [3, 3], [2, 3], [3, 2]],
+            black: [[6, 5], [5, 6], [6, 7], [1, 3], [2, 2], [2, 4]],
+            liberties: [[7, 7], [7, 8], [6, 6], [4, 3], [3, 3], [2, 3], [3, 2]],
+            strategy: "always-pass"
+        }
+    );
+
 </script>

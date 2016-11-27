@@ -6544,6 +6544,137 @@ var _elm_lang$core$Random$cmdMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Random'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Random$init, onEffects: _elm_lang$core$Random$onEffects, onSelfMsg: _elm_lang$core$Random$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Random$cmdMap};
 
+var _elm_lang$core$Set$foldr = F3(
+	function (f, b, _p0) {
+		var _p1 = _p0;
+		return A3(
+			_elm_lang$core$Dict$foldr,
+			F3(
+				function (k, _p2, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p1._0);
+	});
+var _elm_lang$core$Set$foldl = F3(
+	function (f, b, _p3) {
+		var _p4 = _p3;
+		return A3(
+			_elm_lang$core$Dict$foldl,
+			F3(
+				function (k, _p5, b) {
+					return A2(f, k, b);
+				}),
+			b,
+			_p4._0);
+	});
+var _elm_lang$core$Set$toList = function (_p6) {
+	var _p7 = _p6;
+	return _elm_lang$core$Dict$keys(_p7._0);
+};
+var _elm_lang$core$Set$size = function (_p8) {
+	var _p9 = _p8;
+	return _elm_lang$core$Dict$size(_p9._0);
+};
+var _elm_lang$core$Set$member = F2(
+	function (k, _p10) {
+		var _p11 = _p10;
+		return A2(_elm_lang$core$Dict$member, k, _p11._0);
+	});
+var _elm_lang$core$Set$isEmpty = function (_p12) {
+	var _p13 = _p12;
+	return _elm_lang$core$Dict$isEmpty(_p13._0);
+};
+var _elm_lang$core$Set$Set_elm_builtin = function (a) {
+	return {ctor: 'Set_elm_builtin', _0: a};
+};
+var _elm_lang$core$Set$empty = _elm_lang$core$Set$Set_elm_builtin(_elm_lang$core$Dict$empty);
+var _elm_lang$core$Set$singleton = function (k) {
+	return _elm_lang$core$Set$Set_elm_builtin(
+		A2(
+			_elm_lang$core$Dict$singleton,
+			k,
+			{ctor: '_Tuple0'}));
+};
+var _elm_lang$core$Set$insert = F2(
+	function (k, _p14) {
+		var _p15 = _p14;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A3(
+				_elm_lang$core$Dict$insert,
+				k,
+				{ctor: '_Tuple0'},
+				_p15._0));
+	});
+var _elm_lang$core$Set$fromList = function (xs) {
+	return A3(_elm_lang$core$List$foldl, _elm_lang$core$Set$insert, _elm_lang$core$Set$empty, xs);
+};
+var _elm_lang$core$Set$map = F2(
+	function (f, s) {
+		return _elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				f,
+				_elm_lang$core$Set$toList(s)));
+	});
+var _elm_lang$core$Set$remove = F2(
+	function (k, _p16) {
+		var _p17 = _p16;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$remove, k, _p17._0));
+	});
+var _elm_lang$core$Set$union = F2(
+	function (_p19, _p18) {
+		var _p20 = _p19;
+		var _p21 = _p18;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$union, _p20._0, _p21._0));
+	});
+var _elm_lang$core$Set$intersect = F2(
+	function (_p23, _p22) {
+		var _p24 = _p23;
+		var _p25 = _p22;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$intersect, _p24._0, _p25._0));
+	});
+var _elm_lang$core$Set$diff = F2(
+	function (_p27, _p26) {
+		var _p28 = _p27;
+		var _p29 = _p26;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(_elm_lang$core$Dict$diff, _p28._0, _p29._0));
+	});
+var _elm_lang$core$Set$filter = F2(
+	function (p, _p30) {
+		var _p31 = _p30;
+		return _elm_lang$core$Set$Set_elm_builtin(
+			A2(
+				_elm_lang$core$Dict$filter,
+				F2(
+					function (k, _p32) {
+						return p(k);
+					}),
+				_p31._0));
+	});
+var _elm_lang$core$Set$partition = F2(
+	function (p, _p33) {
+		var _p34 = _p33;
+		var _p35 = A2(
+			_elm_lang$core$Dict$partition,
+			F2(
+				function (k, _p36) {
+					return p(k);
+				}),
+			_p34._0);
+		var p1 = _p35._0;
+		var p2 = _p35._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Set$Set_elm_builtin(p1),
+			_1: _elm_lang$core$Set$Set_elm_builtin(p2)
+		};
+	});
+
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrap;
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags;
 
@@ -8965,72 +9096,173 @@ var _user$project$Board$cartesian = F2(
 			},
 			xs);
 	});
-var _user$project$Board$points = function (_p0) {
-	var _p1 = _p0;
-	var _p2 = _p1._0;
-	return A2(
-		_user$project$Board$cartesian,
-		A2(_elm_lang$core$List$range, 0, _p2 - 1),
-		A2(_elm_lang$core$List$range, 0, _p2 - 1));
-};
-var _user$project$Board$stones = function (_p3) {
-	var _p4 = _p3;
-	return _elm_lang$core$Dict$toList(_p4._1);
-};
-var _user$project$Board$annotations = function (_p5) {
-	var _p6 = _p5;
-	return _elm_lang$core$Dict$toList(_p6._2);
-};
 var _user$project$Board$neighbors = F2(
-	function (_p7, point) {
-		var _p8 = _p7;
-		var _p14 = _p8._0;
-		var fits = function (_p9) {
-			var _p10 = _p9;
-			var _p12 = _p10._1;
-			var _p11 = _p10._0;
-			return (_elm_lang$core$Native_Utils.cmp(_p11, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p12, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p11, _p14) < 0) && (_elm_lang$core$Native_Utils.cmp(_p12, _p14) < 0)));
+	function (point, _p0) {
+		var _p1 = _p0;
+		var _p7 = _p1._0;
+		var fits = function (_p2) {
+			var _p3 = _p2;
+			var _p5 = _p3._1;
+			var _p4 = _p3._0;
+			return (_elm_lang$core$Native_Utils.cmp(_p4, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p5, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p4, _p7) < 0) && (_elm_lang$core$Native_Utils.cmp(_p5, _p7) < 0)));
 		};
-		var _p13 = point;
-		var x = _p13._0;
-		var y = _p13._1;
-		var possibles = {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: x + 1, _1: y},
-			_1: {
+		var _p6 = point;
+		var x = _p6._0;
+		var y = _p6._1;
+		var possibles = _elm_lang$core$Set$fromList(
+			{
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: x - 1, _1: y},
+				_0: {ctor: '_Tuple2', _0: x + 1, _1: y},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: x, _1: y + 1},
+					_0: {ctor: '_Tuple2', _0: x - 1, _1: y},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: x, _1: y - 1},
-						_1: {ctor: '[]'}
+						_0: {ctor: '_Tuple2', _0: x, _1: y + 1},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: x, _1: y - 1},
+							_1: {ctor: '[]'}
+						}
 					}
 				}
-			}
-		};
-		return A2(_elm_lang$core$List$filter, fits, possibles);
+			});
+		return A2(_elm_lang$core$Set$filter, fits, possibles);
 	});
+var _user$project$Board$stoneAt = F2(
+	function (point, _p8) {
+		var _p9 = _p8;
+		return A2(_elm_lang$core$Dict$get, point, _p9._1);
+	});
+var _user$project$Board$friendlyNeighbors = F2(
+	function (point, board) {
+		var maybePlayer = A2(_user$project$Board$stoneAt, point, board);
+		var samePlayer = function (newPoint) {
+			return _elm_lang$core$Native_Utils.eq(
+				A2(_user$project$Board$stoneAt, newPoint, board),
+				maybePlayer);
+		};
+		var _p10 = maybePlayer;
+		if (_p10.ctor === 'Just') {
+			return A2(
+				_elm_lang$core$Set$filter,
+				samePlayer,
+				A2(_user$project$Board$neighbors, point, board));
+		} else {
+			return _elm_lang$core$Set$empty;
+		}
+	});
+var _user$project$Board$growGroup = F2(
+	function (frontier, group) {
+		growGroup:
+		while (true) {
+			var newGroup = _elm_lang$core$Native_Utils.update(
+				group,
+				{
+					points: A2(_elm_lang$core$Set$union, group.points, frontier)
+				});
+			var neighborStones = function (point) {
+				return _elm_lang$core$Set$toList(
+					A2(_user$project$Board$friendlyNeighbors, point, group.board));
+			};
+			var frontierNeighbors = _elm_lang$core$Set$fromList(
+				A2(
+					_elm_lang$core$List$concatMap,
+					neighborStones,
+					_elm_lang$core$Set$toList(frontier)));
+			var newFrontier = A2(_elm_lang$core$Set$diff, frontierNeighbors, group.points);
+			if (_elm_lang$core$Set$isEmpty(newFrontier)) {
+				return newGroup;
+			} else {
+				var _v4 = newFrontier,
+					_v5 = newGroup;
+				frontier = _v4;
+				group = _v5;
+				continue growGroup;
+			}
+		}
+	});
+var _user$project$Board$groupAt = F2(
+	function (point, board) {
+		var _p11 = A2(_user$project$Board$stoneAt, point, board);
+		if (_p11.ctor === 'Just') {
+			return _elm_lang$core$Maybe$Just(
+				A2(
+					_user$project$Board$growGroup,
+					_elm_lang$core$Set$singleton(point),
+					{board: board, points: _elm_lang$core$Set$empty, owner: _p11._0}));
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
+var _user$project$Board$hostileNeighbors = F2(
+	function (point, board) {
+		var maybePlayer = A2(_user$project$Board$stoneAt, point, board);
+		var isHostile = function (newPoint) {
+			var maybeOther = A2(_user$project$Board$stoneAt, newPoint, board);
+			return !_elm_lang$core$Native_Utils.eq(maybePlayer, maybeOther);
+		};
+		var _p12 = maybePlayer;
+		if (_p12.ctor === 'Just') {
+			return A2(
+				_elm_lang$core$Set$filter,
+				isHostile,
+				A2(_user$project$Board$neighbors, point, board));
+		} else {
+			return _elm_lang$core$Set$empty;
+		}
+	});
+var _user$project$Board$points = function (_p13) {
+	var _p14 = _p13;
+	var _p15 = _p14._0;
+	return A2(
+		_user$project$Board$cartesian,
+		A2(_elm_lang$core$List$range, 0, _p15 - 1),
+		A2(_elm_lang$core$List$range, 0, _p15 - 1));
+};
+var _user$project$Board$stones = function (_p16) {
+	var _p17 = _p16;
+	return _elm_lang$core$Dict$toList(_p17._1);
+};
+var _user$project$Board$annotations = function (_p18) {
+	var _p19 = _p18;
+	return _elm_lang$core$Dict$toList(_p19._2);
+};
 var _user$project$Board$isFilled = F2(
-	function (point, _p15) {
-		var _p16 = _p15;
-		return A2(_elm_lang$core$Dict$member, point, _p16._1);
+	function (point, _p20) {
+		var _p21 = _p20;
+		return A2(_elm_lang$core$Dict$member, point, _p21._1);
 	});
 var _user$project$Board$liberties = F2(
 	function (point, board) {
 		var notFilled = function (point) {
 			return !A2(_user$project$Board$isFilled, point, board);
 		};
-		var pointNeighbors = A2(_user$project$Board$neighbors, board, point);
-		return A2(_elm_lang$core$List$filter, notFilled, pointNeighbors);
+		return A2(
+			_elm_lang$core$Set$filter,
+			notFilled,
+			A2(_user$project$Board$neighbors, point, board));
+	});
+var _user$project$Board$sharedLiberties = function (group) {
+	var boardLiberties = function (point) {
+		return _elm_lang$core$Set$toList(
+			A2(_user$project$Board$liberties, point, group.board));
+	};
+	var libertiesForStones = A2(
+		_elm_lang$core$List$concatMap,
+		boardLiberties,
+		_elm_lang$core$Set$toList(group.points));
+	return _elm_lang$core$Set$fromList(libertiesForStones);
+};
+var _user$project$Board$Group = F3(
+	function (a, b, c) {
+		return {board: a, points: b, owner: c};
 	});
 var _user$project$Board$White = {ctor: 'White'};
 var _user$project$Board$Black = {ctor: 'Black'};
 var _user$project$Board$nextPlayer = function (player) {
-	var _p17 = player;
-	if (_p17.ctor === 'Black') {
+	var _p22 = player;
+	if (_p22.ctor === 'Black') {
 		return _user$project$Board$White;
 	} else {
 		return _user$project$Board$Black;
@@ -9044,13 +9276,13 @@ var _user$project$Board$new = function (size) {
 	return A3(_user$project$Board$SquareGrid, size, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty);
 };
 var _user$project$Board$annotate = F3(
-	function (annotation, point, _p18) {
-		var _p19 = _p18;
+	function (annotation, point, _p23) {
+		var _p24 = _p23;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p19._0,
-			_p19._1,
-			A3(_elm_lang$core$Dict$insert, point, annotation, _p19._2));
+			_p24._0,
+			_p24._1,
+			A3(_elm_lang$core$Dict$insert, point, annotation, _p24._2));
 	});
 var _user$project$Board$annotateMany = F3(
 	function (annotation, points, board) {
@@ -9061,34 +9293,45 @@ var _user$project$Board$annotateMany = F3(
 			points);
 	});
 var _user$project$Board$place = F3(
-	function (player, point, _p20) {
-		var _p21 = _p20;
+	function (player, point, _p25) {
+		var _p26 = _p25;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p21._0,
-			A3(_elm_lang$core$Dict$insert, point, player, _p21._1),
-			A2(_elm_lang$core$Dict$remove, point, _p21._2));
+			_p26._0,
+			A3(_elm_lang$core$Dict$insert, point, player, _p26._1),
+			A2(_elm_lang$core$Dict$remove, point, _p26._2));
 	});
 var _user$project$Board$remove = F2(
-	function (point, _p22) {
-		var _p23 = _p22;
+	function (point, _p27) {
+		var _p28 = _p27;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p23._0,
-			A2(_elm_lang$core$Dict$remove, point, _p23._1),
-			A2(_elm_lang$core$Dict$remove, point, _p23._2));
+			_p28._0,
+			A2(_elm_lang$core$Dict$remove, point, _p28._1),
+			A2(_elm_lang$core$Dict$remove, point, _p28._2));
+	});
+var _user$project$Board$removeDead = F2(
+	function (point, board) {
+		var maybeGroup = A2(
+			_elm_lang$core$Debug$log,
+			'group',
+			A2(_user$project$Board$groupAt, point, board));
+		var _p29 = maybeGroup;
+		if (_p29.ctor === 'Just') {
+			var _p30 = _p29._0;
+			return _elm_lang$core$Set$isEmpty(
+				_user$project$Board$sharedLiberties(_p30)) ? A3(_elm_lang$core$Set$foldl, _user$project$Board$remove, board, _p30.points) : board;
+		} else {
+			return board;
+		}
 	});
 var _user$project$Board$removeDeadNeighbors = F2(
-	function (board, origin) {
-		var isDead = function (point) {
-			return A2(_user$project$Board$isFilled, point, board) && _elm_lang$core$List$isEmpty(
-				A2(_user$project$Board$liberties, point, board));
-		};
-		var candidates = A2(
-			_elm_lang$core$List$filter,
-			isDead,
-			A2(_user$project$Board$neighbors, board, origin));
-		return A3(_elm_lang$core$List$foldl, _user$project$Board$remove, board, candidates);
+	function (point, board) {
+		return A3(
+			_elm_lang$core$Set$foldl,
+			_user$project$Board$removeDead,
+			board,
+			A2(_user$project$Board$hostileNeighbors, point, board));
 	});
 var _user$project$Board$LibertyCount = {ctor: 'LibertyCount'};
 
@@ -9205,7 +9448,7 @@ var _user$project$Game_Rules$captureRule = function (inProgress) {
 	var action = _p0._1;
 	var _p1 = action;
 	if (_p1.ctor === 'Play') {
-		var newBoard = A2(_user$project$Board$removeDeadNeighbors, inProgress.provisionalBoard, _p1._0);
+		var newBoard = A2(_user$project$Board$removeDeadNeighbors, _p1._0, inProgress.provisionalBoard);
 		return _elm_lang$core$Result$Ok(
 			_elm_lang$core$Native_Utils.update(
 				inProgress,
@@ -9672,7 +9915,8 @@ var _user$project$View$annotate = F2(
 			return A2(
 				_elm_lang$core$List$concatMap,
 				annotateLiberty,
-				A2(_user$project$Board$liberties, _p3._0, board));
+				_elm_lang$core$Set$toList(
+					A2(_user$project$Board$liberties, _p3._0, board)));
 		};
 		return A2(
 			_elm_lang$core$List$concatMap,
