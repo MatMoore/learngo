@@ -22,6 +22,8 @@ module Board
 -}
 
 import Dict exposing (Dict)
+import Set exposing (Set)
+import Debug exposing (log)
 
 
 {-| The Player uses stones of one color: black or white.
@@ -59,6 +61,15 @@ type Board
 -}
 type Annotation
     = LibertyCount
+
+
+{-| A connected group of stones of the same colour.
+-}
+type alias Group =
+    { board : Board
+    , points : Set Point
+    , owner : Player
+    }
 
 
 {-| Create a square grid. Size is assumed to be positive.
@@ -103,52 +114,6 @@ isFilled point (SquareGrid size stones annotations) =
     Dict.member point stones
 
 
-{-| Remove neighbors of a point if they have no liberties. Treats all stones independently ignoring groups.
--}
-removeDeadNeighbors : Board -> Point -> Board
-removeDeadNeighbors board origin =
-    let
-        isDead point =
-            (isFilled point board) && (List.isEmpty (liberties point board))
-
-        candidates : List Point
-        candidates =
-            List.filter isDead (neighbors board origin)
-    in
-        List.foldl remove board candidates
-
-
-{-| List all points on the board that are connected to the specified point.
--}
-neighbors : Board -> Point -> List Point
-neighbors (SquareGrid size _ _) point =
-    let
-        ( x, y ) =
-            point
-
-        possibles =
-            [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
-
-        fits ( x_, y_ ) =
-            (x_ >= 0) && (y_ >= 0) && (x_ < size) && (y_ < size)
-    in
-        List.filter fits possibles
-
-
-{-| List all the points that are connected to the specified point and are empty.
--}
-liberties : Point -> Board -> List Point
-liberties point board =
-    let
-        pointNeighbors =
-            (neighbors board point)
-
-        notFilled point =
-            not (isFilled point board)
-    in
-        List.filter notFilled pointNeighbors
-
-
 {-| List all the annotations on the board.
 -}
 annotations : Board -> List ( Point, Annotation )
@@ -168,6 +133,159 @@ stones (SquareGrid _ result _) =
 points : Board -> List Point
 points (SquareGrid size _ _) =
     cartesian (List.range 0 (size - 1)) (List.range 0 (size - 1))
+
+
+{-| Look for a stone at a point on the board
+-}
+stoneAt : Point -> Board -> Maybe Player
+stoneAt point (SquareGrid _ stones _) =
+    Dict.get point stones
+
+
+{-| Look for a connected group of stones at a point on the board
+-}
+groupAt : Point -> Board -> Maybe Group
+groupAt point board =
+    case stoneAt point board of
+        Just player ->
+            Just (growGroup (Set.singleton point) { board = board, points = Set.empty, owner = player })
+
+        Nothing ->
+            Nothing
+
+
+{-| List all the points that are connected to stones in a group
+-}
+sharedLiberties : Group -> Set Point
+sharedLiberties group =
+    let
+        boardLiberties point =
+            Set.toList (liberties point group.board)
+
+        libertiesForStones =
+            List.concatMap boardLiberties (Set.toList group.points)
+    in
+        Set.fromList libertiesForStones
+
+
+growGroup : Set Point -> Group -> Group
+growGroup frontier group =
+    let
+        neighborStones : Point -> List Point
+        neighborStones point =
+            Set.toList (friendlyNeighbors point group.board)
+
+        frontierNeighbors : Set Point
+        frontierNeighbors =
+            Set.fromList (List.concatMap neighborStones (Set.toList frontier))
+
+        newFrontier : Set Point
+        newFrontier =
+            Set.diff frontierNeighbors group.points
+
+        newGroup =
+            { group | points = Set.union group.points frontier }
+    in
+        if Set.isEmpty newFrontier then
+            newGroup
+        else
+            growGroup newFrontier newGroup
+
+
+{-| Remove a group if it has no liberties. This is a no-op if the point is empty or it contains a living group.
+-}
+removeDead : Point -> Board -> Board
+removeDead point board =
+    let
+        maybeGroup =
+            log "group" (groupAt point board)
+    in
+        case maybeGroup of
+            Just group ->
+                if Set.isEmpty (sharedLiberties group) then
+                    Set.foldl remove board group.points
+                else
+                    board
+
+            Nothing ->
+                board
+
+
+{-| Remove neighbors of a point if they have no liberties. Treats all stones independently ignoring groups.
+-}
+removeDeadNeighbors : Point -> Board -> Board
+removeDeadNeighbors point board =
+    Set.foldl removeDead board (hostileNeighbors point board)
+
+
+{-| List all points on the board that are connected to the specified point.
+-}
+neighbors : Point -> Board -> Set Point
+neighbors point (SquareGrid size _ _) =
+    let
+        ( x, y ) =
+            point
+
+        possibles =
+            Set.fromList [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
+
+        fits ( x_, y_ ) =
+            (x_ >= 0) && (y_ >= 0) && (x_ < size) && (y_ < size)
+    in
+        Set.filter fits possibles
+
+
+{-| List all the points that are connected to the specified point and are the same color.
+-}
+friendlyNeighbors : Point -> Board -> Set Point
+friendlyNeighbors point board =
+    let
+        maybePlayer =
+            stoneAt point board
+
+        samePlayer newPoint =
+            (stoneAt newPoint board) == maybePlayer
+    in
+        case maybePlayer of
+            Just player ->
+                Set.filter samePlayer (neighbors point board)
+
+            Nothing ->
+                Set.empty
+
+
+{-| List all the points that are connected to the specified point and are not the same color.
+-}
+hostileNeighbors : Point -> Board -> Set Point
+hostileNeighbors point board =
+    let
+        maybePlayer =
+            stoneAt point board
+
+        isHostile newPoint =
+            let
+                maybeOther =
+                    stoneAt newPoint board
+            in
+                maybePlayer /= maybeOther
+    in
+        case maybePlayer of
+            Just player ->
+                Set.filter isHostile (neighbors point board)
+
+            Nothing ->
+                Set.empty
+
+
+{-| List all the points that are connected to the specified point and are empty.
+-}
+liberties : Point -> Board -> Set Point
+liberties point board =
+    let
+        notFilled point =
+            not (isFilled point board)
+    in
+        Set.filter notFilled (neighbors point board)
 
 
 cartesian : List a -> List b -> List ( a, b )

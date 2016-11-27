@@ -3,6 +3,7 @@ module View exposing (view)
 import List exposing (map)
 import Dict
 import Html
+import Set
 import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -245,7 +246,7 @@ annotate config board =
             annotatePoint config (boardPosition config point) "1"
 
         annotateLiberties ( point, _ ) =
-            List.concatMap annotateLiberty (liberties point board)
+            List.concatMap annotateLiberty (Set.toList (liberties point board))
     in
         List.concatMap annotateLiberties (Board.annotations board)
 

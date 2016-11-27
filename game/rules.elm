@@ -76,7 +76,7 @@ captureRule inProgress =
             Play point ->
                 let
                     newBoard =
-                        Board.removeDeadNeighbors inProgress.provisionalBoard point
+                        Board.removeDeadNeighbors point inProgress.provisionalBoard
                 in
                     Ok { inProgress | provisionalBoard = newBoard }
 
