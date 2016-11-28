@@ -6,6 +6,7 @@ module Game.Rules
 
 import Game.Types exposing (..)
 import Board exposing (Player(..), Point, Board, Annotation(..))
+import Group exposing (removeDeadNeighbors)
 
 
 getRuleset : String -> Maybe Ruleset
@@ -76,7 +77,7 @@ captureRule inProgress =
             Play point ->
                 let
                     newBoard =
-                        Board.removeDeadNeighbors point inProgress.provisionalBoard
+                        removeDeadNeighbors point inProgress.provisionalBoard
                 in
                     Ok { inProgress | provisionalBoard = newBoard }
 

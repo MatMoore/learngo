@@ -9,7 +9,8 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Game.Types exposing (Game, GameMessage(..))
 import Game.Record exposing (chatItems)
-import Board exposing (Point, Board, Player(..), liberties)
+import Board exposing (Point, Board, Player(..))
+import Group exposing (liberties)
 import Types exposing (..)
 
 
