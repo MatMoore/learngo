@@ -9109,30 +9109,50 @@ var _user$project$Board$neighbors = F2(
 		var _p6 = point;
 		var x = _p6._0;
 		var y = _p6._1;
-		var possibles = _elm_lang$core$Set$fromList(
-			{
+		var possibles = {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: x + 1, _1: y},
+			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: x + 1, _1: y},
+				_0: {ctor: '_Tuple2', _0: x - 1, _1: y},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: x - 1, _1: y},
+					_0: {ctor: '_Tuple2', _0: x, _1: y + 1},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: x, _1: y + 1},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: x, _1: y - 1},
-							_1: {ctor: '[]'}
-						}
+						_0: {ctor: '_Tuple2', _0: x, _1: y - 1},
+						_1: {ctor: '[]'}
 					}
 				}
-			});
-		return A2(_elm_lang$core$Set$filter, fits, possibles);
+			}
+		};
+		return A2(_elm_lang$core$List$filter, fits, possibles);
+	});
+var _user$project$Board$points = function (_p8) {
+	var _p9 = _p8;
+	var _p10 = _p9._0;
+	return A2(
+		_user$project$Board$cartesian,
+		A2(_elm_lang$core$List$range, 0, _p10 - 1),
+		A2(_elm_lang$core$List$range, 0, _p10 - 1));
+};
+var _user$project$Board$stones = function (_p11) {
+	var _p12 = _p11;
+	return _elm_lang$core$Dict$toList(_p12._1);
+};
+var _user$project$Board$annotations = function (_p13) {
+	var _p14 = _p13;
+	return _elm_lang$core$Dict$toList(_p14._2);
+};
+var _user$project$Board$isFilled = F2(
+	function (point, _p15) {
+		var _p16 = _p15;
+		return A2(_elm_lang$core$Dict$member, point, _p16._1);
 	});
 var _user$project$Board$stoneAt = F2(
-	function (point, _p8) {
-		var _p9 = _p8;
-		return A2(_elm_lang$core$Dict$get, point, _p9._1);
+	function (point, _p17) {
+		var _p18 = _p17;
+		return A2(_elm_lang$core$Dict$get, point, _p18._1);
 	});
 var _user$project$Board$friendlyNeighbors = F2(
 	function (point, board) {
@@ -9142,57 +9162,14 @@ var _user$project$Board$friendlyNeighbors = F2(
 				A2(_user$project$Board$stoneAt, newPoint, board),
 				maybePlayer);
 		};
-		var _p10 = maybePlayer;
-		if (_p10.ctor === 'Just') {
+		var _p19 = maybePlayer;
+		if (_p19.ctor === 'Just') {
 			return A2(
-				_elm_lang$core$Set$filter,
+				_elm_lang$core$List$filter,
 				samePlayer,
 				A2(_user$project$Board$neighbors, point, board));
 		} else {
-			return _elm_lang$core$Set$empty;
-		}
-	});
-var _user$project$Board$growGroup = F2(
-	function (frontier, group) {
-		growGroup:
-		while (true) {
-			var newGroup = _elm_lang$core$Native_Utils.update(
-				group,
-				{
-					points: A2(_elm_lang$core$Set$union, group.points, frontier)
-				});
-			var neighborStones = function (point) {
-				return _elm_lang$core$Set$toList(
-					A2(_user$project$Board$friendlyNeighbors, point, group.board));
-			};
-			var frontierNeighbors = _elm_lang$core$Set$fromList(
-				A2(
-					_elm_lang$core$List$concatMap,
-					neighborStones,
-					_elm_lang$core$Set$toList(frontier)));
-			var newFrontier = A2(_elm_lang$core$Set$diff, frontierNeighbors, group.points);
-			if (_elm_lang$core$Set$isEmpty(newFrontier)) {
-				return newGroup;
-			} else {
-				var _v4 = newFrontier,
-					_v5 = newGroup;
-				frontier = _v4;
-				group = _v5;
-				continue growGroup;
-			}
-		}
-	});
-var _user$project$Board$groupAt = F2(
-	function (point, board) {
-		var _p11 = A2(_user$project$Board$stoneAt, point, board);
-		if (_p11.ctor === 'Just') {
-			return _elm_lang$core$Maybe$Just(
-				A2(
-					_user$project$Board$growGroup,
-					_elm_lang$core$Set$singleton(point),
-					{board: board, points: _elm_lang$core$Set$empty, owner: _p11._0}));
-		} else {
-			return _elm_lang$core$Maybe$Nothing;
+			return {ctor: '[]'};
 		}
 	});
 var _user$project$Board$hostileNeighbors = F2(
@@ -9202,67 +9179,21 @@ var _user$project$Board$hostileNeighbors = F2(
 			var maybeOther = A2(_user$project$Board$stoneAt, newPoint, board);
 			return !_elm_lang$core$Native_Utils.eq(maybePlayer, maybeOther);
 		};
-		var _p12 = maybePlayer;
-		if (_p12.ctor === 'Just') {
+		var _p20 = maybePlayer;
+		if (_p20.ctor === 'Just') {
 			return A2(
-				_elm_lang$core$Set$filter,
+				_elm_lang$core$List$filter,
 				isHostile,
 				A2(_user$project$Board$neighbors, point, board));
 		} else {
-			return _elm_lang$core$Set$empty;
+			return {ctor: '[]'};
 		}
-	});
-var _user$project$Board$points = function (_p13) {
-	var _p14 = _p13;
-	var _p15 = _p14._0;
-	return A2(
-		_user$project$Board$cartesian,
-		A2(_elm_lang$core$List$range, 0, _p15 - 1),
-		A2(_elm_lang$core$List$range, 0, _p15 - 1));
-};
-var _user$project$Board$stones = function (_p16) {
-	var _p17 = _p16;
-	return _elm_lang$core$Dict$toList(_p17._1);
-};
-var _user$project$Board$annotations = function (_p18) {
-	var _p19 = _p18;
-	return _elm_lang$core$Dict$toList(_p19._2);
-};
-var _user$project$Board$isFilled = F2(
-	function (point, _p20) {
-		var _p21 = _p20;
-		return A2(_elm_lang$core$Dict$member, point, _p21._1);
-	});
-var _user$project$Board$liberties = F2(
-	function (point, board) {
-		var notFilled = function (point) {
-			return !A2(_user$project$Board$isFilled, point, board);
-		};
-		return A2(
-			_elm_lang$core$Set$filter,
-			notFilled,
-			A2(_user$project$Board$neighbors, point, board));
-	});
-var _user$project$Board$sharedLiberties = function (group) {
-	var boardLiberties = function (point) {
-		return _elm_lang$core$Set$toList(
-			A2(_user$project$Board$liberties, point, group.board));
-	};
-	var libertiesForStones = A2(
-		_elm_lang$core$List$concatMap,
-		boardLiberties,
-		_elm_lang$core$Set$toList(group.points));
-	return _elm_lang$core$Set$fromList(libertiesForStones);
-};
-var _user$project$Board$Group = F3(
-	function (a, b, c) {
-		return {board: a, points: b, owner: c};
 	});
 var _user$project$Board$White = {ctor: 'White'};
 var _user$project$Board$Black = {ctor: 'Black'};
 var _user$project$Board$nextPlayer = function (player) {
-	var _p22 = player;
-	if (_p22.ctor === 'Black') {
+	var _p21 = player;
+	if (_p21.ctor === 'Black') {
 		return _user$project$Board$White;
 	} else {
 		return _user$project$Board$Black;
@@ -9276,13 +9207,13 @@ var _user$project$Board$new = function (size) {
 	return A3(_user$project$Board$SquareGrid, size, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty);
 };
 var _user$project$Board$annotate = F3(
-	function (annotation, point, _p23) {
-		var _p24 = _p23;
+	function (annotation, point, _p22) {
+		var _p23 = _p22;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p24._0,
-			_p24._1,
-			A3(_elm_lang$core$Dict$insert, point, annotation, _p24._2));
+			_p23._0,
+			_p23._1,
+			A3(_elm_lang$core$Dict$insert, point, annotation, _p23._2));
 	});
 var _user$project$Board$annotateMany = F3(
 	function (annotation, points, board) {
@@ -9293,45 +9224,22 @@ var _user$project$Board$annotateMany = F3(
 			points);
 	});
 var _user$project$Board$place = F3(
-	function (player, point, _p25) {
-		var _p26 = _p25;
+	function (player, point, _p24) {
+		var _p25 = _p24;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p26._0,
-			A3(_elm_lang$core$Dict$insert, point, player, _p26._1),
-			A2(_elm_lang$core$Dict$remove, point, _p26._2));
+			_p25._0,
+			A3(_elm_lang$core$Dict$insert, point, player, _p25._1),
+			A2(_elm_lang$core$Dict$remove, point, _p25._2));
 	});
 var _user$project$Board$remove = F2(
-	function (point, _p27) {
-		var _p28 = _p27;
+	function (point, _p26) {
+		var _p27 = _p26;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p28._0,
-			A2(_elm_lang$core$Dict$remove, point, _p28._1),
-			A2(_elm_lang$core$Dict$remove, point, _p28._2));
-	});
-var _user$project$Board$removeDead = F2(
-	function (point, board) {
-		var maybeGroup = A2(
-			_elm_lang$core$Debug$log,
-			'group',
-			A2(_user$project$Board$groupAt, point, board));
-		var _p29 = maybeGroup;
-		if (_p29.ctor === 'Just') {
-			var _p30 = _p29._0;
-			return _elm_lang$core$Set$isEmpty(
-				_user$project$Board$sharedLiberties(_p30)) ? A3(_elm_lang$core$Set$foldl, _user$project$Board$remove, board, _p30.points) : board;
-		} else {
-			return board;
-		}
-	});
-var _user$project$Board$removeDeadNeighbors = F2(
-	function (point, board) {
-		return A3(
-			_elm_lang$core$Set$foldl,
-			_user$project$Board$removeDead,
-			board,
-			A2(_user$project$Board$hostileNeighbors, point, board));
+			_p27._0,
+			A2(_elm_lang$core$Dict$remove, point, _p27._1),
+			A2(_elm_lang$core$Dict$remove, point, _p27._2));
 	});
 var _user$project$Board$LibertyCount = {ctor: 'LibertyCount'};
 
@@ -9441,6 +9349,98 @@ var _user$project$AI$getStrategy = function (name) {
 	}
 };
 
+var _user$project$Group$liberties = F2(
+	function (point, board) {
+		var notFilled = function (point) {
+			return !A2(_user$project$Board$isFilled, point, board);
+		};
+		return _elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$filter,
+				notFilled,
+				A2(_user$project$Board$neighbors, point, board)));
+	});
+var _user$project$Group$sharedLiberties = function (group) {
+	var boardLiberties = function (point) {
+		return _elm_lang$core$Set$toList(
+			A2(_user$project$Group$liberties, point, group.board));
+	};
+	var libertiesForStones = A2(
+		_elm_lang$core$List$concatMap,
+		boardLiberties,
+		_elm_lang$core$Set$toList(group.points));
+	return _elm_lang$core$Set$fromList(libertiesForStones);
+};
+var _user$project$Group$growGroup = F2(
+	function (frontier, group) {
+		growGroup:
+		while (true) {
+			var newGroup = _elm_lang$core$Native_Utils.update(
+				group,
+				{
+					points: A2(_elm_lang$core$Set$union, group.points, frontier)
+				});
+			var neighborStones = function (point) {
+				return A2(_user$project$Board$friendlyNeighbors, point, group.board);
+			};
+			var frontierNeighbors = _elm_lang$core$Set$fromList(
+				A2(
+					_elm_lang$core$List$concatMap,
+					neighborStones,
+					_elm_lang$core$Set$toList(frontier)));
+			var newFrontier = A2(_elm_lang$core$Set$diff, frontierNeighbors, group.points);
+			if (_elm_lang$core$Set$isEmpty(newFrontier)) {
+				return newGroup;
+			} else {
+				var _v0 = newFrontier,
+					_v1 = newGroup;
+				frontier = _v0;
+				group = _v1;
+				continue growGroup;
+			}
+		}
+	});
+var _user$project$Group$groupAt = F2(
+	function (point, board) {
+		var _p0 = A2(_user$project$Board$stoneAt, point, board);
+		if (_p0.ctor === 'Just') {
+			return _elm_lang$core$Maybe$Just(
+				A2(
+					_user$project$Group$growGroup,
+					_elm_lang$core$Set$singleton(point),
+					{board: board, points: _elm_lang$core$Set$empty, owner: _p0._0}));
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
+var _user$project$Group$removeDead = F2(
+	function (point, board) {
+		var maybeGroup = A2(
+			_elm_lang$core$Debug$log,
+			'group',
+			A2(_user$project$Group$groupAt, point, board));
+		var _p1 = maybeGroup;
+		if (_p1.ctor === 'Just') {
+			var _p2 = _p1._0;
+			return _elm_lang$core$Set$isEmpty(
+				_user$project$Group$sharedLiberties(_p2)) ? A3(_elm_lang$core$Set$foldl, _user$project$Board$remove, board, _p2.points) : board;
+		} else {
+			return board;
+		}
+	});
+var _user$project$Group$removeDeadNeighbors = F2(
+	function (point, board) {
+		return A3(
+			_elm_lang$core$List$foldl,
+			_user$project$Group$removeDead,
+			board,
+			A2(_user$project$Board$hostileNeighbors, point, board));
+	});
+var _user$project$Group$Group = F3(
+	function (a, b, c) {
+		return {board: a, points: b, owner: c};
+	});
+
 var _user$project$Game_Rules$captureRule = function (inProgress) {
 	var game = inProgress.game;
 	var _p0 = inProgress.currentMove;
@@ -9448,7 +9448,7 @@ var _user$project$Game_Rules$captureRule = function (inProgress) {
 	var action = _p0._1;
 	var _p1 = action;
 	if (_p1.ctor === 'Play') {
-		var newBoard = A2(_user$project$Board$removeDeadNeighbors, _p1._0, inProgress.provisionalBoard);
+		var newBoard = A2(_user$project$Group$removeDeadNeighbors, _p1._0, inProgress.provisionalBoard);
 		return _elm_lang$core$Result$Ok(
 			_elm_lang$core$Native_Utils.update(
 				inProgress,
@@ -9916,7 +9916,7 @@ var _user$project$View$annotate = F2(
 				_elm_lang$core$List$concatMap,
 				annotateLiberty,
 				_elm_lang$core$Set$toList(
-					A2(_user$project$Board$liberties, _p3._0, board)));
+					A2(_user$project$Group$liberties, _p3._0, board)));
 		};
 		return A2(
 			_elm_lang$core$List$concatMap,
