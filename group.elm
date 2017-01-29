@@ -6,6 +6,12 @@ module Group
         )
 
 {-| This module models groups of connected stones on a go board.
+
+# Removing dead stones
+@docs removeDead, removeDeadNeighbors
+
+# Counting liberties
+@docs liberties
 -}
 
 import Board

@@ -1564,8 +1564,7 @@ function toString(v)
 	var type = typeof v;
 	if (type === 'function')
 	{
-		var name = v.func ? v.func.name : v.name;
-		return '<function' + (name === '' ? '' : ':') + name + '>';
+		return '<function>';
 	}
 
 	if (type === 'boolean')
@@ -2072,6 +2071,13 @@ var _elm_lang$core$List$sortWith = _elm_lang$core$Native_List.sortWith;
 var _elm_lang$core$List$sortBy = _elm_lang$core$Native_List.sortBy;
 var _elm_lang$core$List$sort = function (xs) {
 	return A2(_elm_lang$core$List$sortBy, _elm_lang$core$Basics$identity, xs);
+};
+var _elm_lang$core$List$singleton = function (value) {
+	return {
+		ctor: '::',
+		_0: value,
+		_1: {ctor: '[]'}
+	};
 };
 var _elm_lang$core$List$drop = F2(
 	function (n, list) {
@@ -3520,15 +3526,8 @@ function setupIncomingPort(name, callback)
 		sentBeforeInit.push(value);
 	}
 
-	function postInitSend(incomingValue)
+	function postInitSend(value)
 	{
-		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
-		if (result.ctor === 'Err')
-		{
-			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
-		}
-
-		var value = result._0;
 		var temp = subs;
 		while (temp.ctor !== '[]')
 		{
@@ -3539,7 +3538,13 @@ function setupIncomingPort(name, callback)
 
 	function send(incomingValue)
 	{
-		currentSend(incomingValue);
+		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
+		if (result.ctor === 'Err')
+		{
+			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
+		}
+
+		currentSend(result._0);
 	}
 
 	return { send: send };
@@ -4160,7 +4165,7 @@ function endsWith(sub, str)
 function indexes(sub, str)
 {
 	var subLen = sub.length;
-	
+
 	if (subLen < 1)
 	{
 		return _elm_lang$core$Native_List.Nil;
@@ -4173,74 +4178,78 @@ function indexes(sub, str)
 	{
 		is.push(i);
 		i = i + subLen;
-	}	
-	
+	}
+
 	return _elm_lang$core$Native_List.fromArray(is);
 }
+
 
 function toInt(s)
 {
 	var len = s.length;
+
+	// if empty
 	if (len === 0)
 	{
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+		return intErr(s);
 	}
-	var start = 0;
-	if (s[0] === '-')
+
+	// if hex
+	var c = s[0];
+	if (c === '0' && s[1] === 'x')
 	{
-		if (len === 1)
+		for (var i = 2; i < len; ++i)
 		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+			var c = s[i];
+			if (('0' <= c && c <= '9') || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'))
+			{
+				continue;
+			}
+			return intErr(s);
 		}
-		start = 1;
+		return _elm_lang$core$Result$Ok(parseInt(s, 16));
 	}
-	for (var i = start; i < len; ++i)
+
+	// is decimal
+	if (c > '9' || (c < '0' && c !== '-' && c !== '+'))
+	{
+		return intErr(s);
+	}
+	for (var i = 1; i < len; ++i)
 	{
 		var c = s[i];
 		if (c < '0' || '9' < c)
 		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+			return intErr(s);
 		}
 	}
+
 	return _elm_lang$core$Result$Ok(parseInt(s, 10));
 }
 
+function intErr(s)
+{
+	return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int");
+}
+
+
 function toFloat(s)
 {
-	var len = s.length;
-	if (len === 0)
+	// check if it is a hex, octal, or binary number
+	if (s.length === 0 || /[\sxbo]/.test(s))
 	{
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
+		return floatErr(s);
 	}
-	var start = 0;
-	if (s[0] === '-')
-	{
-		if (len === 1)
-		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
-		}
-		start = 1;
-	}
-	var dotCount = 0;
-	for (var i = start; i < len; ++i)
-	{
-		var c = s[i];
-		if ('0' <= c && c <= '9')
-		{
-			continue;
-		}
-		if (c === '.')
-		{
-			dotCount += 1;
-			if (dotCount <= 1)
-			{
-				continue;
-			}
-		}
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
-	}
-	return _elm_lang$core$Result$Ok(parseFloat(s));
+	var n = +s;
+	// faster isNaN check
+	return n === n ? _elm_lang$core$Result$Ok(n) : floatErr(s);
 }
+
+function floatErr(s)
+{
+	return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float");
+}
+
 
 function toList(str)
 {
@@ -5695,11 +5704,6 @@ function badToString(problem)
 				problem = problem.rest;
 				break;
 
-			case 'index':
-				context += '[' + problem.index + ']';
-				problem = problem.rest;
-				break;
-
 			case 'oneOf':
 				var problems = problem.problems;
 				for (var i = 0; i < problems.length; i++)
@@ -6937,9 +6941,9 @@ function on(name, options, decoder)
 
 function equalEvents(a, b)
 {
-	if (!a.options === b.options)
+	if (a.options !== b.options)
 	{
-		if (a.stopPropagation !== b.stopPropagation || a.preventDefault !== b.preventDefault)
+		if (a.options.stopPropagation !== b.options.stopPropagation || a.options.preventDefault !== b.options.preventDefault)
 		{
 			return false;
 		}
@@ -8215,7 +8219,7 @@ function normalRenderer(parentNode, view)
 var rAF =
 	typeof requestAnimationFrame !== 'undefined'
 		? requestAnimationFrame
-		: function(callback) { callback(); };
+		: function(callback) { setTimeout(callback, 1000 / 60); };
 
 function makeStepper(domNode, view, initialVirtualNode, eventNode)
 {
@@ -9097,30 +9101,30 @@ var _user$project$Board$cartesian = F2(
 			xs);
 	});
 var _user$project$Board$neighbors = F2(
-	function (point, _p0) {
-		var _p1 = _p0;
-		var _p7 = _p1._0;
-		var fits = function (_p2) {
-			var _p3 = _p2;
-			var _p5 = _p3._1;
-			var _p4 = _p3._0;
-			return (_elm_lang$core$Native_Utils.cmp(_p4, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p5, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p4, _p7) < 0) && (_elm_lang$core$Native_Utils.cmp(_p5, _p7) < 0)));
+	function (_p1, _p0) {
+		var _p2 = _p1;
+		var _p10 = _p2._1;
+		var _p9 = _p2._0;
+		var _p3 = _p0;
+		var _p8 = _p3._0;
+		var fits = function (_p4) {
+			var _p5 = _p4;
+			var _p7 = _p5._1;
+			var _p6 = _p5._0;
+			return (_elm_lang$core$Native_Utils.cmp(_p6, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p7, 0) > -1) && ((_elm_lang$core$Native_Utils.cmp(_p6, _p8) < 0) && (_elm_lang$core$Native_Utils.cmp(_p7, _p8) < 0)));
 		};
-		var _p6 = point;
-		var x = _p6._0;
-		var y = _p6._1;
 		var possibles = {
 			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: x + 1, _1: y},
+			_0: {ctor: '_Tuple2', _0: _p9 + 1, _1: _p10},
 			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: x - 1, _1: y},
+				_0: {ctor: '_Tuple2', _0: _p9 - 1, _1: _p10},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: x, _1: y + 1},
+					_0: {ctor: '_Tuple2', _0: _p9, _1: _p10 + 1},
 					_1: {
 						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: x, _1: y - 1},
+						_0: {ctor: '_Tuple2', _0: _p9, _1: _p10 - 1},
 						_1: {ctor: '[]'}
 					}
 				}
@@ -9128,31 +9132,31 @@ var _user$project$Board$neighbors = F2(
 		};
 		return A2(_elm_lang$core$List$filter, fits, possibles);
 	});
-var _user$project$Board$points = function (_p8) {
-	var _p9 = _p8;
-	var _p10 = _p9._0;
+var _user$project$Board$points = function (_p11) {
+	var _p12 = _p11;
+	var _p13 = _p12._0;
 	return A2(
 		_user$project$Board$cartesian,
-		A2(_elm_lang$core$List$range, 0, _p10 - 1),
-		A2(_elm_lang$core$List$range, 0, _p10 - 1));
+		A2(_elm_lang$core$List$range, 0, _p13 - 1),
+		A2(_elm_lang$core$List$range, 0, _p13 - 1));
 };
-var _user$project$Board$stones = function (_p11) {
-	var _p12 = _p11;
-	return _elm_lang$core$Dict$toList(_p12._1);
+var _user$project$Board$stones = function (_p14) {
+	var _p15 = _p14;
+	return _elm_lang$core$Dict$toList(_p15._1);
 };
-var _user$project$Board$annotations = function (_p13) {
-	var _p14 = _p13;
-	return _elm_lang$core$Dict$toList(_p14._2);
+var _user$project$Board$annotations = function (_p16) {
+	var _p17 = _p16;
+	return _elm_lang$core$Dict$toList(_p17._2);
 };
 var _user$project$Board$isFilled = F2(
-	function (point, _p15) {
-		var _p16 = _p15;
-		return A2(_elm_lang$core$Dict$member, point, _p16._1);
+	function (point, _p18) {
+		var _p19 = _p18;
+		return A2(_elm_lang$core$Dict$member, point, _p19._1);
 	});
 var _user$project$Board$stoneAt = F2(
-	function (point, _p17) {
-		var _p18 = _p17;
-		return A2(_elm_lang$core$Dict$get, point, _p18._1);
+	function (point, _p20) {
+		var _p21 = _p20;
+		return A2(_elm_lang$core$Dict$get, point, _p21._1);
 	});
 var _user$project$Board$friendlyNeighbors = F2(
 	function (point, board) {
@@ -9162,8 +9166,8 @@ var _user$project$Board$friendlyNeighbors = F2(
 				A2(_user$project$Board$stoneAt, newPoint, board),
 				maybePlayer);
 		};
-		var _p19 = maybePlayer;
-		if (_p19.ctor === 'Just') {
+		var _p22 = maybePlayer;
+		if (_p22.ctor === 'Just') {
 			return A2(
 				_elm_lang$core$List$filter,
 				samePlayer,
@@ -9179,8 +9183,8 @@ var _user$project$Board$hostileNeighbors = F2(
 			var maybeOther = A2(_user$project$Board$stoneAt, newPoint, board);
 			return !_elm_lang$core$Native_Utils.eq(maybePlayer, maybeOther);
 		};
-		var _p20 = maybePlayer;
-		if (_p20.ctor === 'Just') {
+		var _p23 = maybePlayer;
+		if (_p23.ctor === 'Just') {
 			return A2(
 				_elm_lang$core$List$filter,
 				isHostile,
@@ -9192,8 +9196,8 @@ var _user$project$Board$hostileNeighbors = F2(
 var _user$project$Board$White = {ctor: 'White'};
 var _user$project$Board$Black = {ctor: 'Black'};
 var _user$project$Board$nextPlayer = function (player) {
-	var _p21 = player;
-	if (_p21.ctor === 'Black') {
+	var _p24 = player;
+	if (_p24.ctor === 'Black') {
 		return _user$project$Board$White;
 	} else {
 		return _user$project$Board$Black;
@@ -9207,13 +9211,13 @@ var _user$project$Board$new = function (size) {
 	return A3(_user$project$Board$SquareGrid, size, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty);
 };
 var _user$project$Board$annotate = F3(
-	function (annotation, point, _p22) {
-		var _p23 = _p22;
+	function (annotation, point, _p25) {
+		var _p26 = _p25;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p23._0,
-			_p23._1,
-			A3(_elm_lang$core$Dict$insert, point, annotation, _p23._2));
+			_p26._0,
+			_p26._1,
+			A3(_elm_lang$core$Dict$insert, point, annotation, _p26._2));
 	});
 var _user$project$Board$annotateMany = F3(
 	function (annotation, points, board) {
@@ -9224,22 +9228,22 @@ var _user$project$Board$annotateMany = F3(
 			points);
 	});
 var _user$project$Board$place = F3(
-	function (player, point, _p24) {
-		var _p25 = _p24;
+	function (player, point, _p27) {
+		var _p28 = _p27;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p25._0,
-			A3(_elm_lang$core$Dict$insert, point, player, _p25._1),
-			A2(_elm_lang$core$Dict$remove, point, _p25._2));
+			_p28._0,
+			A3(_elm_lang$core$Dict$insert, point, player, _p28._1),
+			A2(_elm_lang$core$Dict$remove, point, _p28._2));
 	});
 var _user$project$Board$remove = F2(
-	function (point, _p26) {
-		var _p27 = _p26;
+	function (point, _p29) {
+		var _p30 = _p29;
 		return A3(
 			_user$project$Board$SquareGrid,
-			_p27._0,
-			A2(_elm_lang$core$Dict$remove, point, _p27._1),
-			A2(_elm_lang$core$Dict$remove, point, _p27._2));
+			_p30._0,
+			A2(_elm_lang$core$Dict$remove, point, _p30._1),
+			A2(_elm_lang$core$Dict$remove, point, _p30._2));
 	});
 var _user$project$Board$LibertyCount = {ctor: 'LibertyCount'};
 

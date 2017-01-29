@@ -1,5 +1,14 @@
 module Game.Api exposing (new, play)
 
+{-| Game.Api defines basic functions for playing a game of Go.
+
+# Starting a new game
+@docs new
+
+# Playing a move
+@docs play
+-}
+
 import Game.Types exposing (..)
 import Game.Rules exposing (defaultRuleset)
 import Game.Record exposing (addMessage, addMove)
@@ -7,6 +16,8 @@ import Dict exposing (Dict)
 import Board exposing (Player(..), nextPlayer)
 
 
+{-| Create a game
+-}
 new : Int -> Game
 new boardSize =
     { board = Board.new boardSize
@@ -35,6 +46,8 @@ applyRules move game =
         List.foldl foldStep initial game.rules
 
 
+{-| Attempt to play a move.
+-}
 play : Move -> Game -> Result Game Game
 play move game =
     let

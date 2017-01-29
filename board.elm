@@ -21,6 +21,28 @@ module Board
         )
 
 {-| This module models a standard Go board and the stones a player places on it.
+
+# Players
+@docs Player, nextPlayer
+
+# Points
+@docs Point
+
+# Boards
+
+@docs Board
+
+## Create a board
+@docs new
+
+## Placing and removing stones
+@docs place, remove, stones, stoneAt
+
+## Annotating boards
+@docs Annotation, annotate, annotateMany, annotations
+
+## Helper functions
+@docs isFilled, points, neighbors, friendlyNeighbors, hostileNeighbors
 -}
 
 import Dict exposing (Dict)
@@ -136,11 +158,8 @@ points (SquareGrid size _ _) =
 {-| List all points on the board that are connected to the specified point.
 -}
 neighbors : Point -> Board -> List Point
-neighbors point (SquareGrid size _ _) =
+neighbors ( x, y ) (SquareGrid size _ _) =
     let
-        ( x, y ) =
-            point
-
         possibles =
             [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
 

@@ -1,9 +1,22 @@
 module Game.Record exposing (addMessage, addMove, chatItems)
 
+{-| Game.Record manages a log of the game.
+# Adding moves to the record
+@docs addMove
+
+# Commenting on the game
+@docs addMessage
+
+# Showing text
+@docs chatItems
+-}
+
 import Game.Types exposing (..)
 import Board exposing (Player(..))
 
 
+{-| Add a message to the game record.
+-}
 addMessage : GameRecord -> String -> GameRecord
 addMessage gameRecord msg =
     case gameRecord of
@@ -14,6 +27,8 @@ addMessage gameRecord msg =
             MoveSequence prev { current | notes = msg :: current.notes } next
 
 
+{-| Retrieve all items from the game record, including player passes.
+-}
 chatItems : Game -> List String
 chatItems game =
     let
@@ -33,6 +48,8 @@ chatItems game =
                 []
 
 
+{-| Add a move to the game record.
+-}
 addMove : Move -> GameRecord -> GameRecord
 addMove move gameRecord =
     let

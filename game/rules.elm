@@ -4,16 +4,26 @@ module Game.Rules
         , defaultRuleset
         )
 
+{-| Module Game.Rules defines some rulesets for Go, using the types defined in Game.Types.
+
+# Retrieving rules
+@docs getRuleset, defaultRuleset
+-}
+
 import Game.Types exposing (..)
 import Board exposing (Player(..), Point, Board, Annotation(..))
 import Group exposing (removeDeadNeighbors)
 
 
+{-| Get a ruleset by name.
+-}
 getRuleset : String -> Maybe Ruleset
 getRuleset name =
     Just defaultRuleset
 
 
+{-| Get the default ruleset.
+-}
 defaultRuleset : Ruleset
 defaultRuleset =
     [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule, Rule captureRule ]
