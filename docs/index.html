@@ -7,7 +7,7 @@
 <h1>How to play Go</h1>
 <section>
 <p>Go is a 2-player strategy game with a few simple rules.</p>
-<p>One player takes black stones, and the other takes white. The black player always goes first, unless they are playing the game with a handicap.</p>
+<p>One player takes black stones, and the other takes white. The black player goes first, unless there is a handicap.</p>
 <p>In this interactive tutorial, you'll be playing as black. Go is normally played on a 19x19 grid, but a smaller 9x9 grid is easier to start with.</p>
 </section>
 <section>
@@ -19,9 +19,9 @@
 </section>
 <section>
     <h1>Surround stones to capture them</h1>
-    <p>Each point on the board is connected by lines to 2, 3 or 4 other points (depending on if it is a corner, side, or middle point). If any of those connecting points are empty, each one counts as one <em>liberty</em> for that stone.</p>
+    <p>Each point on the board is connected by lines to 2, 3 or 4 other points. If any of those connecting points are empty, each one counts as one <em>liberty</em> for that stone.</p>
     <p>You can take away a liberty of an opponent's stone by placing a stone on it.</p>
-    <p>When an opponent's stone has no liberties unfilled, you've captured it, and you remove the captured stone from the board.</p>
+    <p>When all of an opponent's stone liberties are filled, you've captured the stone, and you remove it from the board.</p>
     <div id="liberties"/>
 </section>
 <section>
@@ -29,6 +29,34 @@
     <p>Stones connect with neighboring stones of the same color.</p>
     <p>When stones connect, they share liberties, so you need to surround the whole group to capture the stones, rather than surrounding one at a time.</p>
     <div id="liberties2"/>
+</section>
+<section>
+    <h1>Surround areas to make territory</h1>
+    <p>At the end of the game, the number of points you surround counts toward your score.</p>
+    <p>With Chinese counting rules, your score is <em>number of stones of your colour on the board + number of points surrounded</em></p>
+    <p>Japanese counting rules are slightly different but it doesn't change the game much.</p>
+</section>
+<section>
+    <h1>Self-capture is not allowed (suicide rule)</h1>
+    <p>You can't place a stone somewhere where it would have no liberties.</p>
+    <p>But if you're placing a stone that captures a neighbouring group, that's ok: you count the number of liberties at the end of the turn.</em></p>
+</section>
+<section>
+    <h1>Positions can't repeat themselves (ko rule)</h1>
+    <p>You can't make a move that would bring the board back to the state it was just in.</p>
+    <p>Without this rule, there could be situations where the players could endlessly capture each others stones and the game would never end.</p>
+    <p>A situation where a player can't capture a stone without breaking this rule is called a <em>ko</em>. The player has to play somewhere else first.
+</section>
+<section>
+    <h1>The game ends when both players pass or one player resigns</h1>
+    <p>You can pass a move at any time. When both players pass consecutively, the player with the highest score wins.</p>
+    <p>The white player usually gets a few bonus points - <em>komi</em> -  to compensate for black going first.
+</section>
+<section>
+    <h1>Play Go online</h1>
+    <p>Now you know the rules of the Go you can start playing some games. You can play online at <a href="https://online-go.com/">OGS</a>.</p>
+    <p>It's a good idea to play for a while on a small board (9x9 or 13x13) before playing on a full sized board.</p>
+    <p>Normally the weaker player starts the game with handicap stones on the board, so that both players have an equal chance of winning. The number of stones should be equal to the difference in rank of the players, from 2 stones up to 9 stones. If there is one stone difference, that player goes first as black, and white doesn't get komi.</p>
 </section>
 <script type="text/javascript" src="elm.js"></script>
 
