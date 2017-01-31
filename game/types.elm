@@ -9,7 +9,7 @@ module Game.Types exposing (..)
 @docs GameMessage
 
 # Rules
-@docs MoveInProgress, Rule, Ruleset
+@docs MoveInProgress
 
 # Game records
 @docs MoveRecord, GameRecord, Game
@@ -24,18 +24,6 @@ import Time exposing (Time)
 -}
 type alias MoveInProgress =
     { provisionalBoard : Board, currentMove : Move, game : Game }
-
-
-{-| A function that tries to do something with a provisional move, and fails if the move is not valid.
--}
-type Rule
-    = Rule (MoveInProgress -> Result String MoveInProgress)
-
-
-{-| Several rules that should be used for a game.
--}
-type alias Ruleset =
-    List Rule
 
 
 {-| Actions the player can take on their turn.
@@ -82,5 +70,4 @@ type alias Game =
     , capturedStones : Dict Player Int
     , gameRecord : GameRecord
     , currentPlayer : Player
-    , rules : Ruleset
     }

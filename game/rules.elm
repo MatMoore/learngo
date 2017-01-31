@@ -1,33 +1,44 @@
 module Game.Rules
     exposing
-        ( getRuleset
-        , defaultRuleset
+        ( play
         )
 
-{-| Module Game.Rules defines some rulesets for Go, using the types defined in Game.Types.
+{-| Module Game.Rules defines some a ruleset for Go.
 
-# Retrieving rules
-@docs getRuleset, defaultRuleset
+# Play a move
+@docs play
 -}
 
 import Game.Types exposing (..)
-import Board exposing (Player(..), Point, Board, Annotation(..))
+import Board exposing (Player(..), Point, Board, Annotation(..), nextPlayer)
 import Group exposing (removeDeadNeighbors, liberties)
+import Game.Record exposing (addMessage, addMove)
 import Set
 
 
-{-| Get a ruleset by name.
+{-|
+Play a move
 -}
-getRuleset : String -> Maybe Ruleset
-getRuleset name =
-    Just defaultRuleset
+play : Move -> Game -> Result Game Game
+play move game =
+    let
+        initial =
+            Ok { provisionalBoard = game.board, currentMove = move, game = game }
 
+        result =
+            initial
+                |> Result.andThen placePlayer
+                |> Result.andThen onePlayerPerTurnRule
+                |> Result.andThen oneStonePerPointRule
+                |> Result.andThen captureRule
+                |> Result.andThen suicideRule
+    in
+        case result of
+            Ok moveInProgress ->
+                Ok { game | board = moveInProgress.provisionalBoard, gameRecord = (addMove move game.gameRecord), currentPlayer = nextPlayer game.currentPlayer }
 
-{-| Get the default ruleset.
--}
-defaultRuleset : Ruleset
-defaultRuleset =
-    [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule, Rule captureRule, Rule suicideRule ]
+            Err msg ->
+                Err { game | gameRecord = addMessage game.gameRecord msg }
 
 
 placePlayer : MoveInProgress -> Result String MoveInProgress
