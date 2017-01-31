@@ -125,3 +125,11 @@ liberties point board =
             not (isFilled point board)
     in
         Set.fromList (List.filter notFilled (neighbors point board))
+
+
+
+-- liberties : Point -> Board -> Set Point
+-- liberties point board =
+--     groupAt point board
+--         |> Maybe.map sharedLiberties
+--         |> Maybe.withDefault (Set.empty)

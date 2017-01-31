@@ -12,7 +12,8 @@ module Game.Rules
 
 import Game.Types exposing (..)
 import Board exposing (Player(..), Point, Board, Annotation(..))
-import Group exposing (removeDeadNeighbors)
+import Group exposing (removeDeadNeighbors, liberties)
+import Set
 
 
 {-| Get a ruleset by name.
@@ -26,7 +27,7 @@ getRuleset name =
 -}
 defaultRuleset : Ruleset
 defaultRuleset =
-    [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule, Rule captureRule ]
+    [ Rule placePlayer, Rule onePlayerPerTurnRule, Rule oneStonePerPointRule, Rule captureRule, Rule suicideRule ]
 
 
 placePlayer : MoveInProgress -> Result String MoveInProgress
@@ -90,6 +91,23 @@ captureRule inProgress =
                         removeDeadNeighbors point inProgress.provisionalBoard
                 in
                     Ok { inProgress | provisionalBoard = newBoard }
+
+            _ ->
+                Ok inProgress
+
+
+suicideRule : MoveInProgress -> Result String MoveInProgress
+suicideRule inProgress =
+    let
+        { currentMove, provisionalBoard } =
+            inProgress
+    in
+        case currentMove of
+            ( _, Play point ) ->
+                if (Set.isEmpty (liberties point provisionalBoard)) then
+                    Err "Cannot place a stone with no liberties"
+                else
+                    Ok inProgress
 
             _ ->
                 Ok inProgress

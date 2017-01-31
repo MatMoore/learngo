@@ -40,6 +40,7 @@
     <h1>Self-capture is not allowed (suicide rule)</h1>
     <p>You can't place a stone somewhere where it would have no liberties.</p>
     <p>But if you're placing a stone that captures a neighbouring group, that's ok: you count the number of liberties at the end of the turn.</em></p>
+    <div id="suicide"/>
 </section>
 <section>
     <h1>Positions can't repeat themselves (ko rule)</h1>
@@ -53,10 +54,12 @@
     <p>The white player usually gets a few bonus points - <em>komi</em> -  to compensate for black going first.
 </section>
 <section>
-    <h1>Play Go online</h1>
-    <p>Now you know the rules of the Go you can start playing some games. You can play online at <a href="https://online-go.com/">OGS</a>.</p>
+    <h1>Playing Go</h1>
+    <p>Now you know the rules of the Go you can start playing some games. <a href="https://online-go.com/">OGS</a> is a good online server.</p>
     <p>It's a good idea to play for a while on a small board (9x9 or 13x13) before playing on a full sized board.</p>
-    <p>Normally the weaker player starts the game with handicap stones on the board, so that both players have an equal chance of winning. The number of stones should be equal to the difference in rank of the players, from 2 stones up to 9 stones. If there is one stone difference, that player goes first as black, and white doesn't get komi.</p>
+    <p>Normally the weaker player starts the game with handicap stones on the board, so that both players have an equal chance of winning.</p>
+    <p>When you've played some games you'll get a rank - this goes from around from 30 kyu (weakest) to 1 kyu, and then after after 1 kyu you have 1 dan, 2 dan... up to 9 dan (strongest).
+    <p>The number of handicap stones should be equal to the difference in rank of the players, from 2 stones up to 9 stones. If it's only one difference, that player goes first as black, and white doesn't get komi.</p>
 </section>
 <script type="text/javascript" src="elm.js"></script>
 
@@ -64,6 +67,7 @@
     var placing_stones = document.getElementById('placing-stones');
     var liberties = document.getElementById('liberties');
     var liberties2 = document.getElementById('liberties2');
+    var suicide = document.getElementById('suicide');
     Elm.Main.embed(placing_stones, {black: [], white: [], liberties: [], strategy: "random-stone"});
     Elm.Main.embed(
         liberties,
@@ -84,4 +88,21 @@
         }
     );
 
+    Elm.Main.embed(
+        suicide,
+        {
+            white: [
+              [0,0], [0,1], [1,0],
+              [5,2], [7,2], [6,1], [6,3],
+              [8,8], [7,7], [6,8], [8,6], [6,7], [7,6],
+              [0,6], [2,6], [1,5], [1,7],
+            ],
+            black: [
+              [0,2], [1,2], [2,0], [2,1],
+              [0,7], [2,7], [0,8], [1,8], [2, 5], [3,6], [1,4], [0,5], [0,4], [3, 4], [2, 8], [3,7]
+            ],
+            liberties: [],
+            strategy: "always-pass"
+        }
+    );
 </script>
