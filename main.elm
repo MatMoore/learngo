@@ -8,7 +8,7 @@ import View exposing (view)
 import AI exposing (generateMove, Strategy, getStrategy)
 import Time exposing (millisecond)
 import Board exposing (Player(..), Annotation(..), Point)
-import Game.Record exposing (addMessage)
+import Game.Log exposing (addNote)
 
 
 init : Flags -> ( Model, Cmd GameMessage )
@@ -48,7 +48,7 @@ update msg model =
                                 ( { model | game = newGame, pendingMove = Nothing }, Cmd.none )
 
                             Err game ->
-                                {--( { game | gameRecord = addMessage game.gameRecord "AI got confused :/" }, Cmd.none ) --}
+                                {--( { game | log = addNote "AI got confused :/" game.log }, Cmd.none ) --}
                                 ( model, Cmd.none )
 
                 Nothing ->

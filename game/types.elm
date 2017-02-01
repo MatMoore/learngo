@@ -69,6 +69,6 @@ type alias Log =
 type alias Game =
     { board : Board
     , capturedStones : Dict Player Int
-    , gameRecord : Log
+    , log : Log
     , currentPlayer : Player
     }

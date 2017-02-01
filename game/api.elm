@@ -21,7 +21,7 @@ new : Int -> Game
 new boardSize =
     { board = Board.new boardSize
     , capturedStones = Dict.empty
-    , gameRecord = []
+    , log = []
     , currentPlayer = Black
     }
 

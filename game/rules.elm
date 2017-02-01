@@ -12,7 +12,7 @@ module Game.Rules
 import Game.Types exposing (..)
 import Board exposing (Player(..), Point, Board, Annotation(..), nextPlayer)
 import Group exposing (removeDeadNeighbors, liberties)
-import Game.Record exposing (addMessage, addMove)
+import Game.Log exposing (addNote, addMove)
 import Set
 
 
@@ -35,10 +35,10 @@ play move game =
     in
         case result of
             Ok moveInProgress ->
-                Ok { game | board = moveInProgress.provisionalBoard, gameRecord = (addMove move game.gameRecord), currentPlayer = nextPlayer game.currentPlayer }
+                Ok { game | board = moveInProgress.provisionalBoard, log = (addMove move game.log), currentPlayer = nextPlayer game.currentPlayer }
 
             Err msg ->
-                Err { game | gameRecord = addMessage game.gameRecord msg }
+                Err { game | log = addNote msg game.log }
 
 
 placePlayer : MoveInProgress -> Result String MoveInProgress

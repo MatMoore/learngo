@@ -9253,7 +9253,7 @@ var _user$project$Game_Types$MoveInProgress = F3(
 	});
 var _user$project$Game_Types$Game = F4(
 	function (a, b, c, d) {
-		return {board: a, capturedStones: b, gameRecord: c, currentPlayer: d};
+		return {board: a, capturedStones: b, log: c, currentPlayer: d};
 	});
 var _user$project$Game_Types$Resign = {ctor: 'Resign'};
 var _user$project$Game_Types$Pass = {ctor: 'Pass'};
@@ -9439,31 +9439,35 @@ var _user$project$Group$Group = F3(
 		return {board: a, points: b, owner: c};
 	});
 
-var _user$project$Game_Record$addMove = F2(
-	function (move, gameRecord) {
+var _user$project$Game_Log$addMove = F2(
+	function (move, log) {
 		return {
 			ctor: '::',
 			_0: _user$project$Game_Types$PlayEvent(move),
-			_1: gameRecord
+			_1: log
 		};
 	});
-var _user$project$Game_Record$chatItems = function (game) {
+var _user$project$Game_Log$notes = function (log) {
 	var extractNote = function (event) {
 		var _p0 = event;
 		if (_p0.ctor === 'NoteEvent') {
 			return _elm_lang$core$Maybe$Just(_p0._0);
 		} else {
-			return _elm_lang$core$Maybe$Nothing;
+			if ((_p0._0.ctor === '_Tuple2') && (_p0._0._1.ctor === 'Pass')) {
+				return _elm_lang$core$Maybe$Just('White pass');
+			} else {
+				return _elm_lang$core$Maybe$Nothing;
+			}
 		}
 	};
-	return A2(_elm_lang$core$List$filterMap, extractNote, game.gameRecord);
+	return A2(_elm_lang$core$List$filterMap, extractNote, log);
 };
-var _user$project$Game_Record$addMessage = F2(
-	function (gameRecord, msg) {
+var _user$project$Game_Log$addNote = F2(
+	function (msg, log) {
 		return {
 			ctor: '::',
 			_0: _user$project$Game_Types$NoteEvent(msg),
-			_1: gameRecord
+			_1: log
 		};
 	});
 
@@ -9550,7 +9554,7 @@ var _user$project$Game_Rules$play = F2(
 					game,
 					{
 						board: _p8._0.provisionalBoard,
-						gameRecord: A2(_user$project$Game_Record$addMove, move, game.gameRecord),
+						log: A2(_user$project$Game_Log$addMove, move, game.log),
 						currentPlayer: _user$project$Board$nextPlayer(game.currentPlayer)
 					}));
 		} else {
@@ -9558,7 +9562,7 @@ var _user$project$Game_Rules$play = F2(
 				_elm_lang$core$Native_Utils.update(
 					game,
 					{
-						gameRecord: A2(_user$project$Game_Record$addMessage, game.gameRecord, _p8._0)
+						log: A2(_user$project$Game_Log$addNote, _p8._0, game.log)
 					}));
 		}
 	});
@@ -9568,7 +9572,7 @@ var _user$project$Game_Api$new = function (boardSize) {
 	return {
 		board: _user$project$Board$new(boardSize),
 		capturedStones: _elm_lang$core$Dict$empty,
-		gameRecord: {ctor: '[]'},
+		log: {ctor: '[]'},
 		currentPlayer: _user$project$Board$Black
 	};
 };
@@ -9599,7 +9603,7 @@ var _user$project$View$chatView = function (game) {
 		A2(
 			_elm_lang$core$List$map,
 			_user$project$View$chatItemView,
-			_user$project$Game_Record$chatItems(game)));
+			_user$project$Game_Log$notes(game.log)));
 };
 var _user$project$View$annotatePoint = F3(
 	function (config, centre, str) {

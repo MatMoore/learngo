@@ -8,7 +8,7 @@ import Svg.Events as Events
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Game.Types exposing (Game, GameMessage(..))
-import Game.Record exposing (chatItems)
+import Game.Log exposing (notes)
 import Board exposing (Point, Board, Player(..))
 import Group exposing (liberties)
 import Types exposing (..)
@@ -265,7 +265,7 @@ chatView : Game -> Html.Html GameMessage
 chatView game =
     Html.ul
         []
-        (List.map chatItemView (chatItems game))
+        (List.map chatItemView (notes game.log))
 
 
 chatItemView : String -> Html.Html GameMessage
