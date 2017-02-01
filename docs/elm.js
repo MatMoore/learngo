@@ -9251,17 +9251,10 @@ var _user$project$Game_Types$MoveInProgress = F3(
 	function (a, b, c) {
 		return {provisionalBoard: a, currentMove: b, game: c};
 	});
-var _user$project$Game_Types$MoveRecord = F2(
-	function (a, b) {
-		return {move: a, notes: b};
+var _user$project$Game_Types$Game = F4(
+	function (a, b, c, d) {
+		return {board: a, capturedStones: b, gameRecord: c, currentPlayer: d};
 	});
-var _user$project$Game_Types$Game = F5(
-	function (a, b, c, d, e) {
-		return {board: a, capturedStones: b, gameRecord: c, currentPlayer: d, rules: e};
-	});
-var _user$project$Game_Types$Rule = function (a) {
-	return {ctor: 'Rule', _0: a};
-};
 var _user$project$Game_Types$Resign = {ctor: 'Resign'};
 var _user$project$Game_Types$Pass = {ctor: 'Pass'};
 var _user$project$Game_Types$Play = function (a) {
@@ -9276,11 +9269,12 @@ var _user$project$Game_Types$ComputerPlay = function (a) {
 var _user$project$Game_Types$UserPlay = function (a) {
 	return {ctor: 'UserPlay', _0: a};
 };
-var _user$project$Game_Types$NotStarted = {ctor: 'NotStarted'};
-var _user$project$Game_Types$MoveSequence = F3(
-	function (a, b, c) {
-		return {ctor: 'MoveSequence', _0: a, _1: b, _2: c};
-	});
+var _user$project$Game_Types$NoteEvent = function (a) {
+	return {ctor: 'NoteEvent', _0: a};
+};
+var _user$project$Game_Types$PlayEvent = function (a) {
+	return {ctor: 'PlayEvent', _0: a};
+};
 
 var _user$project$AI$pointIsEmpty = F2(
 	function (game, point) {
@@ -9445,6 +9439,34 @@ var _user$project$Group$Group = F3(
 		return {board: a, points: b, owner: c};
 	});
 
+var _user$project$Game_Record$addMove = F2(
+	function (move, gameRecord) {
+		return {
+			ctor: '::',
+			_0: _user$project$Game_Types$PlayEvent(move),
+			_1: gameRecord
+		};
+	});
+var _user$project$Game_Record$chatItems = function (game) {
+	var extractNote = function (event) {
+		var _p0 = event;
+		if (_p0.ctor === 'NoteEvent') {
+			return _elm_lang$core$Maybe$Just(_p0._0);
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	};
+	return A2(_elm_lang$core$List$filterMap, extractNote, game.gameRecord);
+};
+var _user$project$Game_Record$addMessage = F2(
+	function (gameRecord, msg) {
+		return {
+			ctor: '::',
+			_0: _user$project$Game_Types$NoteEvent(msg),
+			_1: gameRecord
+		};
+	});
+
 var _user$project$Game_Rules$suicideRule = function (inProgress) {
 	var _p0 = inProgress;
 	var currentMove = _p0.currentMove;
@@ -9504,126 +9526,30 @@ var _user$project$Game_Rules$placePlayer = function (inProgress) {
 		return _elm_lang$core$Result$Ok(inProgress);
 	}
 };
-var _user$project$Game_Rules$defaultRuleset = {
-	ctor: '::',
-	_0: _user$project$Game_Types$Rule(_user$project$Game_Rules$placePlayer),
-	_1: {
-		ctor: '::',
-		_0: _user$project$Game_Types$Rule(_user$project$Game_Rules$onePlayerPerTurnRule),
-		_1: {
-			ctor: '::',
-			_0: _user$project$Game_Types$Rule(_user$project$Game_Rules$oneStonePerPointRule),
-			_1: {
-				ctor: '::',
-				_0: _user$project$Game_Types$Rule(_user$project$Game_Rules$captureRule),
-				_1: {
-					ctor: '::',
-					_0: _user$project$Game_Types$Rule(_user$project$Game_Rules$suicideRule),
-					_1: {ctor: '[]'}
-				}
-			}
-		}
-	}
-};
-var _user$project$Game_Rules$getRuleset = function (name) {
-	return _elm_lang$core$Maybe$Just(_user$project$Game_Rules$defaultRuleset);
-};
-
-var _user$project$Game_Record$addMove = F2(
-	function (move, gameRecord) {
-		var moveRecord = {
-			move: move,
-			notes: {ctor: '[]'}
-		};
-		var _p0 = gameRecord;
-		if (_p0.ctor === 'MoveSequence') {
-			return A3(
-				_user$project$Game_Types$MoveSequence,
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_p0._0,
-					{
-						ctor: '::',
-						_0: _p0._1,
-						_1: {ctor: '[]'}
-					}),
-				moveRecord,
-				{ctor: '[]'});
-		} else {
-			return A3(
-				_user$project$Game_Types$MoveSequence,
-				{ctor: '[]'},
-				moveRecord,
-				{ctor: '[]'});
-		}
-	});
-var _user$project$Game_Record$chatItems = function (game) {
-	var moveToChatItem = function (moveRecord) {
-		var _p1 = moveRecord.move;
-		if (((_p1.ctor === '_Tuple2') && (_p1._0.ctor === 'White')) && (_p1._1.ctor === 'Pass')) {
-			return {ctor: '::', _0: 'White pass', _1: moveRecord.notes};
-		} else {
-			return moveRecord.notes;
-		}
-	};
-	var _p2 = game.gameRecord;
-	if (_p2.ctor === 'MoveSequence') {
-		return A2(
-			_elm_lang$core$List$concatMap,
-			moveToChatItem,
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_p2._0,
-				{ctor: '::', _0: _p2._1, _1: _p2._2}));
-	} else {
-		return {ctor: '[]'};
-	}
-};
-var _user$project$Game_Record$addMessage = F2(
-	function (gameRecord, msg) {
-		var _p3 = gameRecord;
-		if (_p3.ctor === 'NotStarted') {
-			return gameRecord;
-		} else {
-			var _p4 = _p3._1;
-			return A3(
-				_user$project$Game_Types$MoveSequence,
-				_p3._0,
-				_elm_lang$core$Native_Utils.update(
-					_p4,
-					{
-						notes: {ctor: '::', _0: msg, _1: _p4.notes}
-					}),
-				_p3._2);
-		}
-	});
-
-var _user$project$Game_Api$applyRules = F2(
+var _user$project$Game_Rules$play = F2(
 	function (move, game) {
-		var foldStep = F2(
-			function (_p0, result) {
-				var _p1 = _p0;
-				var _p2 = result;
-				if (_p2.ctor === 'Ok') {
-					return _p1._0(_p2._0);
-				} else {
-					return _p2;
-				}
-			});
 		var initial = _elm_lang$core$Result$Ok(
 			{provisionalBoard: game.board, currentMove: move, game: game});
-		return A3(_elm_lang$core$List$foldl, foldStep, initial, game.rules);
-	});
-var _user$project$Game_Api$play = F2(
-	function (move, game) {
-		var result = A2(_user$project$Game_Api$applyRules, move, game);
-		var _p3 = result;
-		if (_p3.ctor === 'Ok') {
+		var result = A2(
+			_elm_lang$core$Result$andThen,
+			_user$project$Game_Rules$suicideRule,
+			A2(
+				_elm_lang$core$Result$andThen,
+				_user$project$Game_Rules$captureRule,
+				A2(
+					_elm_lang$core$Result$andThen,
+					_user$project$Game_Rules$oneStonePerPointRule,
+					A2(
+						_elm_lang$core$Result$andThen,
+						_user$project$Game_Rules$onePlayerPerTurnRule,
+						A2(_elm_lang$core$Result$andThen, _user$project$Game_Rules$placePlayer, initial)))));
+		var _p8 = result;
+		if (_p8.ctor === 'Ok') {
 			return _elm_lang$core$Result$Ok(
 				_elm_lang$core$Native_Utils.update(
 					game,
 					{
-						board: _p3._0.provisionalBoard,
+						board: _p8._0.provisionalBoard,
 						gameRecord: A2(_user$project$Game_Record$addMove, move, game.gameRecord),
 						currentPlayer: _user$project$Board$nextPlayer(game.currentPlayer)
 					}));
@@ -9632,16 +9558,17 @@ var _user$project$Game_Api$play = F2(
 				_elm_lang$core$Native_Utils.update(
 					game,
 					{
-						gameRecord: A2(_user$project$Game_Record$addMessage, game.gameRecord, _p3._0)
+						gameRecord: A2(_user$project$Game_Record$addMessage, game.gameRecord, _p8._0)
 					}));
 		}
 	});
+
+var _user$project$Game_Api$play = _user$project$Game_Rules$play;
 var _user$project$Game_Api$new = function (boardSize) {
 	return {
 		board: _user$project$Board$new(boardSize),
 		capturedStones: _elm_lang$core$Dict$empty,
-		gameRecord: _user$project$Game_Types$NotStarted,
-		rules: _user$project$Game_Rules$defaultRuleset,
+		gameRecord: {ctor: '[]'},
 		currentPlayer: _user$project$Board$Black
 	};
 };

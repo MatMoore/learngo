@@ -12,7 +12,10 @@ module Game.Types exposing (..)
 @docs MoveInProgress
 
 # Game records
-@docs MoveRecord, GameRecord, Game
+@docs Event, Log
+
+# Game state
+@docs Game
 -}
 
 import Dict exposing (Dict)
@@ -48,19 +51,17 @@ type GameMessage
     | Tick Time
 
 
-{-| A move with comments.
+{-| A record of something that happened in the game
 -}
-type alias MoveRecord =
-    { move : Move
-    , notes : List String
-    }
+type Event
+    = PlayEvent Move
+    | NoteEvent String
 
 
-{-| A record of all the moves made in a game.
+{-| A record of all the things that happened in a game.
 -}
-type GameRecord
-    = MoveSequence (List MoveRecord) MoveRecord (List MoveRecord)
-    | NotStarted
+type alias Log =
+    List Event
 
 
 {-| A record storing all game state.
@@ -68,6 +69,6 @@ type GameRecord
 type alias Game =
     { board : Board
     , capturedStones : Dict Player Int
-    , gameRecord : GameRecord
+    , gameRecord : Log
     , currentPlayer : Player
     }

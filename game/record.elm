@@ -17,14 +17,9 @@ import Board exposing (Player(..))
 
 {-| Add a message to the game record.
 -}
-addMessage : GameRecord -> String -> GameRecord
+addMessage : Log -> String -> Log
 addMessage gameRecord msg =
-    case gameRecord of
-        NotStarted ->
-            gameRecord
-
-        MoveSequence prev current next ->
-            MoveSequence prev { current | notes = msg :: current.notes } next
+    NoteEvent msg :: gameRecord
 
 
 {-| Retrieve all items from the game record, including player passes.
@@ -32,33 +27,19 @@ addMessage gameRecord msg =
 chatItems : Game -> List String
 chatItems game =
     let
-        moveToChatItem moveRecord =
-            case moveRecord.move of
-                ( White, Pass ) ->
-                    "White pass" :: moveRecord.notes
+        extractNote event =
+            case event of
+                NoteEvent msg ->
+                    Just msg
 
                 _ ->
-                    moveRecord.notes
+                    Nothing
     in
-        case game.gameRecord of
-            MoveSequence prev current next ->
-                (List.concatMap moveToChatItem (prev ++ (current :: next)))
-
-            _ ->
-                []
+        List.filterMap extractNote game.gameRecord
 
 
 {-| Add a move to the game record.
 -}
-addMove : Move -> GameRecord -> GameRecord
+addMove : Move -> Log -> Log
 addMove move gameRecord =
-    let
-        moveRecord =
-            { move = move, notes = [] }
-    in
-        case gameRecord of
-            MoveSequence prev current next ->
-                MoveSequence (prev ++ [ current ]) moveRecord []
-
-            NotStarted ->
-                MoveSequence [] moveRecord []
+    PlayEvent move :: gameRecord
