@@ -9258,10 +9258,6 @@ var _user$project$Board$remove = F2(
 	});
 var _user$project$Board$LibertyCount = {ctor: 'LibertyCount'};
 
-var _user$project$Game_Types$MoveInProgress = F3(
-	function (a, b, c) {
-		return {provisionalBoard: a, currentMove: b, game: c};
-	});
 var _user$project$Game_Types$Game = F4(
 	function (a, b, c, d) {
 		return {board: a, capturedStones: b, log: c, currentPlayer: d};
@@ -9578,6 +9574,10 @@ var _user$project$Game_Rules$play = F2(
 						log: A2(_user$project$Game_Log$addNote, _p9._0, game.log)
 					}));
 		}
+	});
+var _user$project$Game_Rules$MoveInProgress = F3(
+	function (a, b, c) {
+		return {provisionalBoard: a, currentMove: b, game: c};
 	});
 
 var _user$project$Game_Api$play = _user$project$Game_Rules$play;

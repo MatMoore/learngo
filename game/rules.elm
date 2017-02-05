@@ -16,6 +16,12 @@ import Game.Log exposing (addNote, addMove)
 import Set
 
 
+{-| Represents a move that has not yet been accepted.
+-}
+type alias MoveInProgress =
+    { provisionalBoard : Board, currentMove : Move, game : Game }
+
+
 {-|
 Play a move
 -}

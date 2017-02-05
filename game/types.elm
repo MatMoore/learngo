@@ -8,9 +8,6 @@ module Game.Types exposing (..)
 # Messages
 @docs GameMessage
 
-# Rules
-@docs MoveInProgress
-
 # Game records
 @docs Event, Log
 
@@ -21,12 +18,6 @@ module Game.Types exposing (..)
 import Dict exposing (Dict)
 import Board exposing (Player(..), Point, Board, Annotation(..))
 import Time exposing (Time)
-
-
-{-| Represents a move that has not yet been accepted.
--}
-type alias MoveInProgress =
-    { provisionalBoard : Board, currentMove : Move, game : Game }
 
 
 {-| Actions the player can take on their turn.
