@@ -9153,6 +9153,17 @@ var _user$project$Board$isFilled = F2(
 		var _p19 = _p18;
 		return A2(_elm_lang$core$Dict$member, point, _p19._1);
 	});
+var _user$project$Board$liberties = F2(
+	function (point, board) {
+		var notFilled = function (point) {
+			return !A2(_user$project$Board$isFilled, point, board);
+		};
+		return _elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$filter,
+				notFilled,
+				A2(_user$project$Board$neighbors, point, board)));
+	});
 var _user$project$Board$stoneAt = F2(
 	function (point, _p20) {
 		var _p21 = _p20;
@@ -9347,21 +9358,10 @@ var _user$project$AI$getStrategy = function (name) {
 	}
 };
 
-var _user$project$Group$liberties = F2(
-	function (point, board) {
-		var notFilled = function (point) {
-			return !A2(_user$project$Board$isFilled, point, board);
-		};
-		return _elm_lang$core$Set$fromList(
-			A2(
-				_elm_lang$core$List$filter,
-				notFilled,
-				A2(_user$project$Board$neighbors, point, board)));
-	});
-var _user$project$Group$sharedLiberties = function (group) {
+var _user$project$Group$groupLiberties = function (group) {
 	var boardLiberties = function (point) {
 		return _elm_lang$core$Set$toList(
-			A2(_user$project$Group$liberties, point, group.board));
+			A2(_user$project$Board$liberties, point, group.board));
 	};
 	var libertiesForStones = A2(
 		_elm_lang$core$List$concatMap,
@@ -9421,7 +9421,7 @@ var _user$project$Group$removeDead = F2(
 		if (_p1.ctor === 'Just') {
 			var _p2 = _p1._0;
 			return _elm_lang$core$Set$isEmpty(
-				_user$project$Group$sharedLiberties(_p2)) ? A3(_elm_lang$core$Set$foldl, _user$project$Board$remove, board, _p2.points) : board;
+				_user$project$Group$groupLiberties(_p2)) ? A3(_elm_lang$core$Set$foldl, _user$project$Board$remove, board, _p2.points) : board;
 		} else {
 			return board;
 		}
@@ -9433,6 +9433,16 @@ var _user$project$Group$removeDeadNeighbors = F2(
 			_user$project$Group$removeDead,
 			board,
 			A2(_user$project$Board$hostileNeighbors, point, board));
+	});
+var _user$project$Group$liberties = F2(
+	function (point, board) {
+		return A2(
+			_elm_lang$core$Maybe$withDefault,
+			_elm_lang$core$Set$empty,
+			A2(
+				_elm_lang$core$Maybe$map,
+				_user$project$Group$groupLiberties,
+				A2(_user$project$Group$groupAt, point, board)));
 	});
 var _user$project$Group$Group = F3(
 	function (a, b, c) {

@@ -18,6 +18,7 @@ module Board
         , neighbors
         , friendlyNeighbors
         , hostileNeighbors
+        , liberties
         )
 
 {-| This module models a standard Go board and the stones a player places on it.
@@ -38,14 +39,18 @@ module Board
 ## Placing and removing stones
 @docs place, remove, stones, stoneAt
 
-## Annotating boards
+## Querying the board
+@docs isFilled, points
+
+## Annotating points
 @docs Annotation, annotate, annotateMany, annotations
 
-## Helper functions
-@docs isFilled, points, neighbors, friendlyNeighbors, hostileNeighbors
+## Connectivity
+@docs neighbors, friendlyNeighbors, hostileNeighbors, liberties
 -}
 
 import Dict exposing (Dict)
+import Set exposing (Set)
 
 
 {-| The Player uses stones of one color: black or white.
@@ -209,6 +214,17 @@ hostileNeighbors point board =
 
             Nothing ->
                 []
+
+
+{-| List all the empty points that are connected to a specified point
+-}
+liberties : Point -> Board -> Set Point
+liberties point board =
+    let
+        notFilled point =
+            not (isFilled point board)
+    in
+        Set.fromList (List.filter notFilled (neighbors point board))
 
 
 cartesian : List a -> List b -> List ( a, b )

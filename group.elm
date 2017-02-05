@@ -24,6 +24,7 @@ import Board
         , neighbors
         , friendlyNeighbors
         , hostileNeighbors
+        , liberties
         )
 import Set exposing (Set)
 import Debug exposing (log)
@@ -86,7 +87,7 @@ removeDead point board =
     in
         case maybeGroup of
             Just group ->
-                if Set.isEmpty (sharedLiberties group) then
+                if Set.isEmpty (groupLiberties group) then
                     Set.foldl Board.remove board group.points
                 else
                     board
@@ -104,11 +105,11 @@ removeDeadNeighbors point board =
 
 {-| List all the points that are connected to stones in a group
 -}
-sharedLiberties : Group -> Set Point
-sharedLiberties group =
+groupLiberties : Group -> Set Point
+groupLiberties group =
     let
         boardLiberties point =
-            Set.toList (liberties point group.board)
+            Set.toList (Board.liberties point group.board)
 
         libertiesForStones =
             List.concatMap boardLiberties (Set.toList group.points)
@@ -116,20 +117,10 @@ sharedLiberties group =
         Set.fromList libertiesForStones
 
 
-{-| List all the points that are connected to a specified point and are empty. DEPRECATED - use `sharedLiberties` instead?
+{-| List all the empty points that are connected to a group
 -}
 liberties : Point -> Board -> Set Point
 liberties point board =
-    let
-        notFilled point =
-            not (isFilled point board)
-    in
-        Set.fromList (List.filter notFilled (neighbors point board))
-
-
-
--- liberties : Point -> Board -> Set Point
--- liberties point board =
---     groupAt point board
---         |> Maybe.map sharedLiberties
---         |> Maybe.withDefault (Set.empty)
+    groupAt point board
+        |> Maybe.map groupLiberties
+        |> Maybe.withDefault (Set.empty)
