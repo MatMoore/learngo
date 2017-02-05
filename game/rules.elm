@@ -11,7 +11,7 @@ module Game.Rules
 
 import Game.Types exposing (..)
 import Board exposing (Player(..), Point, Board, Annotation(..), nextPlayer)
-import Group exposing (removeDeadNeighbors, liberties)
+import Group exposing (removeDeadNeighbors, removeDead)
 import Game.Log exposing (addNote, addMove)
 import Set
 
@@ -114,11 +114,15 @@ suicideRule inProgress =
             inProgress
     in
         case currentMove of
-            ( _, Play point ) ->
-                if (Set.isEmpty (liberties point provisionalBoard)) then
-                    Err "Cannot place a stone with no liberties"
-                else
-                    Ok inProgress
+            ( player, Play point ) ->
+                let
+                    boardAfterRule =
+                        removeDead point provisionalBoard
+                in
+                    if (Board.stoneAt point boardAfterRule) == Just player then
+                        Ok inProgress
+                    else
+                        Err "Cannot place a stone with no liberties"
 
             _ ->
                 Ok inProgress

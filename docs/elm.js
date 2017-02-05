@@ -9477,20 +9477,23 @@ var _user$project$Game_Rules$suicideRule = function (inProgress) {
 	var provisionalBoard = _p0.provisionalBoard;
 	var _p1 = currentMove;
 	if ((_p1.ctor === '_Tuple2') && (_p1._1.ctor === 'Play')) {
-		return _elm_lang$core$Set$isEmpty(
-			A2(_user$project$Group$liberties, _p1._1._0, provisionalBoard)) ? _elm_lang$core$Result$Err('Cannot place a stone with no liberties') : _elm_lang$core$Result$Ok(inProgress);
+		var _p2 = _p1._1._0;
+		var boardAfterRule = A2(_user$project$Group$removeDead, _p2, provisionalBoard);
+		return _elm_lang$core$Native_Utils.eq(
+			A2(_user$project$Board$stoneAt, _p2, boardAfterRule),
+			_elm_lang$core$Maybe$Just(_p1._0)) ? _elm_lang$core$Result$Ok(inProgress) : _elm_lang$core$Result$Err('Cannot place a stone with no liberties');
 	} else {
 		return _elm_lang$core$Result$Ok(inProgress);
 	}
 };
 var _user$project$Game_Rules$captureRule = function (inProgress) {
 	var game = inProgress.game;
-	var _p2 = inProgress.currentMove;
-	var player = _p2._0;
-	var action = _p2._1;
-	var _p3 = action;
-	if (_p3.ctor === 'Play') {
-		var newBoard = A2(_user$project$Group$removeDeadNeighbors, _p3._0, inProgress.provisionalBoard);
+	var _p3 = inProgress.currentMove;
+	var player = _p3._0;
+	var action = _p3._1;
+	var _p4 = action;
+	if (_p4.ctor === 'Play') {
+		var newBoard = A2(_user$project$Group$removeDeadNeighbors, _p4._0, inProgress.provisionalBoard);
 		return _elm_lang$core$Result$Ok(
 			_elm_lang$core$Native_Utils.update(
 				inProgress,
@@ -9501,30 +9504,30 @@ var _user$project$Game_Rules$captureRule = function (inProgress) {
 };
 var _user$project$Game_Rules$oneStonePerPointRule = function (inProgress) {
 	var board = inProgress.game.board;
-	var _p4 = inProgress.currentMove;
-	var player = _p4._0;
-	var action = _p4._1;
-	var _p5 = action;
-	if (_p5.ctor === 'Play') {
-		return A2(_user$project$Board$isFilled, _p5._0, board) ? _elm_lang$core$Result$Err('You can\'t put a stone on top of another stone') : _elm_lang$core$Result$Ok(inProgress);
+	var _p5 = inProgress.currentMove;
+	var player = _p5._0;
+	var action = _p5._1;
+	var _p6 = action;
+	if (_p6.ctor === 'Play') {
+		return A2(_user$project$Board$isFilled, _p6._0, board) ? _elm_lang$core$Result$Err('You can\'t put a stone on top of another stone') : _elm_lang$core$Result$Ok(inProgress);
 	} else {
 		return _elm_lang$core$Result$Ok(inProgress);
 	}
 };
 var _user$project$Game_Rules$onePlayerPerTurnRule = function (inProgress) {
-	var _p6 = inProgress.currentMove;
-	var player = _p6._0;
-	var action = _p6._1;
+	var _p7 = inProgress.currentMove;
+	var player = _p7._0;
+	var action = _p7._1;
 	return _elm_lang$core$Native_Utils.eq(player, inProgress.game.currentPlayer) ? _elm_lang$core$Result$Ok(inProgress) : _elm_lang$core$Result$Err('It\'s not your turn');
 };
 var _user$project$Game_Rules$placePlayer = function (inProgress) {
-	var _p7 = inProgress.currentMove;
-	if ((_p7.ctor === '_Tuple2') && (_p7._1.ctor === 'Play')) {
+	var _p8 = inProgress.currentMove;
+	if ((_p8.ctor === '_Tuple2') && (_p8._1.ctor === 'Play')) {
 		return _elm_lang$core$Result$Ok(
 			_elm_lang$core$Native_Utils.update(
 				inProgress,
 				{
-					provisionalBoard: A3(_user$project$Board$place, _p7._0, _p7._1._0, inProgress.provisionalBoard)
+					provisionalBoard: A3(_user$project$Board$place, _p8._0, _p8._1._0, inProgress.provisionalBoard)
 				}));
 	} else {
 		return _elm_lang$core$Result$Ok(inProgress);
@@ -9547,13 +9550,13 @@ var _user$project$Game_Rules$play = F2(
 						_elm_lang$core$Result$andThen,
 						_user$project$Game_Rules$onePlayerPerTurnRule,
 						A2(_elm_lang$core$Result$andThen, _user$project$Game_Rules$placePlayer, initial)))));
-		var _p8 = result;
-		if (_p8.ctor === 'Ok') {
+		var _p9 = result;
+		if (_p9.ctor === 'Ok') {
 			return _elm_lang$core$Result$Ok(
 				_elm_lang$core$Native_Utils.update(
 					game,
 					{
-						board: _p8._0.provisionalBoard,
+						board: _p9._0.provisionalBoard,
 						log: A2(_user$project$Game_Log$addMove, move, game.log),
 						currentPlayer: _user$project$Board$nextPlayer(game.currentPlayer)
 					}));
@@ -9562,7 +9565,7 @@ var _user$project$Game_Rules$play = F2(
 				_elm_lang$core$Native_Utils.update(
 					game,
 					{
-						log: A2(_user$project$Game_Log$addNote, _p8._0, game.log)
+						log: A2(_user$project$Game_Log$addNote, _p9._0, game.log)
 					}));
 		}
 	});
