@@ -9279,9 +9279,10 @@ var _user$project$Game_Types$UserPlay = function (a) {
 var _user$project$Game_Types$NoteEvent = function (a) {
 	return {ctor: 'NoteEvent', _0: a};
 };
-var _user$project$Game_Types$PlayEvent = function (a) {
-	return {ctor: 'PlayEvent', _0: a};
-};
+var _user$project$Game_Types$PlayEvent = F2(
+	function (a, b) {
+		return {ctor: 'PlayEvent', _0: a, _1: b};
+	});
 
 var _user$project$AI$pointIsEmpty = F2(
 	function (game, point) {
@@ -9445,21 +9446,41 @@ var _user$project$Group$Group = F3(
 		return {board: a, points: b, owner: c};
 	});
 
-var _user$project$Game_Log$addMove = F2(
-	function (move, log) {
+var _user$project$Game_Log$findBoard = F2(
+	function (board, log) {
+		findBoard:
+		while (true) {
+			var _p0 = log;
+			if (_p0.ctor === '::') {
+				if (_p0._0.ctor === 'PlayEvent') {
+					return _elm_lang$core$Native_Utils.eq(board, _p0._0._1) || A2(_user$project$Game_Log$findBoard, board, _p0._1);
+				} else {
+					var _v1 = board,
+						_v2 = _p0._1;
+					board = _v1;
+					log = _v2;
+					continue findBoard;
+				}
+			} else {
+				return false;
+			}
+		}
+	});
+var _user$project$Game_Log$addMove = F3(
+	function (move, result, log) {
 		return {
 			ctor: '::',
-			_0: _user$project$Game_Types$PlayEvent(move),
+			_0: A2(_user$project$Game_Types$PlayEvent, move, result),
 			_1: log
 		};
 	});
 var _user$project$Game_Log$notes = function (log) {
 	var extractNote = function (event) {
-		var _p0 = event;
-		if (_p0.ctor === 'NoteEvent') {
-			return _elm_lang$core$Maybe$Just(_p0._0);
+		var _p1 = event;
+		if (_p1.ctor === 'NoteEvent') {
+			return _elm_lang$core$Maybe$Just(_p1._0);
 		} else {
-			if ((_p0._0.ctor === '_Tuple2') && (_p0._0._1.ctor === 'Pass')) {
+			if ((_p1._0.ctor === '_Tuple2') && (_p1._0._1.ctor === 'Pass')) {
 				return _elm_lang$core$Maybe$Just('White pass');
 			} else {
 				return _elm_lang$core$Maybe$Nothing;
@@ -9477,6 +9498,13 @@ var _user$project$Game_Log$addNote = F2(
 		};
 	});
 
+var _user$project$Game_Rules$koRule = function (inProgress) {
+	var alreadyHappened = A2(_user$project$Game_Log$findBoard, inProgress.provisionalBoard, inProgress.game.log);
+	var isPass = _elm_lang$core$Native_Utils.eq(
+		_elm_lang$core$Tuple$second(inProgress.currentMove),
+		_user$project$Game_Types$Pass);
+	return ((!isPass) && alreadyHappened) ? _elm_lang$core$Result$Err('Cannot repeat a previously played board position') : _elm_lang$core$Result$Ok(inProgress);
+};
 var _user$project$Game_Rules$suicideRule = function (inProgress) {
 	var _p0 = inProgress;
 	var currentMove = _p0.currentMove;
@@ -9545,25 +9573,29 @@ var _user$project$Game_Rules$play = F2(
 			{provisionalBoard: game.board, currentMove: move, game: game});
 		var result = A2(
 			_elm_lang$core$Result$andThen,
-			_user$project$Game_Rules$suicideRule,
+			_user$project$Game_Rules$koRule,
 			A2(
 				_elm_lang$core$Result$andThen,
-				_user$project$Game_Rules$captureRule,
+				_user$project$Game_Rules$suicideRule,
 				A2(
 					_elm_lang$core$Result$andThen,
-					_user$project$Game_Rules$oneStonePerPointRule,
+					_user$project$Game_Rules$captureRule,
 					A2(
 						_elm_lang$core$Result$andThen,
-						_user$project$Game_Rules$onePlayerPerTurnRule,
-						A2(_elm_lang$core$Result$andThen, _user$project$Game_Rules$placePlayer, initial)))));
+						_user$project$Game_Rules$oneStonePerPointRule,
+						A2(
+							_elm_lang$core$Result$andThen,
+							_user$project$Game_Rules$onePlayerPerTurnRule,
+							A2(_elm_lang$core$Result$andThen, _user$project$Game_Rules$placePlayer, initial))))));
 		var _p9 = result;
 		if (_p9.ctor === 'Ok') {
+			var _p10 = _p9._0.provisionalBoard;
 			return _elm_lang$core$Result$Ok(
 				_elm_lang$core$Native_Utils.update(
 					game,
 					{
-						board: _p9._0.provisionalBoard,
-						log: A2(_user$project$Game_Log$addMove, move, game.log),
+						board: _p10,
+						log: A3(_user$project$Game_Log$addMove, move, _p10, game.log),
 						currentPlayer: _user$project$Board$nextPlayer(game.currentPlayer)
 					}));
 		} else {

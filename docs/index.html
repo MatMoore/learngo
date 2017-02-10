@@ -47,6 +47,7 @@
     <p>You can't make a move that would bring the board back to the state it was just in.</p>
     <p>Without this rule, there could be situations where the players could endlessly capture each others stones and the game would never end.</p>
     <p>A situation where a player can't capture a stone without breaking this rule is called a <em>ko</em>. The player has to play somewhere else first.
+    <div id="ko"/>
 </section>
 <section>
     <h1>The game ends when both players pass or one player resigns</h1>
@@ -68,6 +69,7 @@
     var liberties = document.getElementById('liberties');
     var liberties2 = document.getElementById('liberties2');
     var suicide = document.getElementById('suicide');
+    var ko = document.getElementById('ko');
     Elm.Main.embed(placing_stones, {black: [], white: [], liberties: [], strategy: "random-stone"});
     Elm.Main.embed(
         liberties,
@@ -100,6 +102,36 @@
             black: [
               [0,2], [1,2], [2,0], [2,1],
               [0,7], [2,7], [0,8], [1,8], [2, 5], [3,6], [1,4], [0,5], [0,4], [3, 4], [2, 8], [3,7]
+            ],
+            liberties: [],
+            strategy: "always-pass"
+        }
+    );
+
+    Elm.Main.embed(
+        ko,
+        {
+            white: [
+                           [5,0],[7,0],
+                           [6,1],[8,1],
+                           [5,2],[7,2],
+                           [6,3],[8,3],
+              [0,4],[2,4], [5,4],[7,4],
+              [1,5],[3,5],
+              [0,6],[2,6],
+              [1,7],[3,7],
+              [0,8],[2,8]
+            ],
+            black: [
+               [1,0],[3,0],
+               [0,1],[2,1],
+               [1,2],[3,2],
+               [0,3],[2,3],
+               [1,4],[3,4], [6,4],[8,4],
+                            [5,5],[7,5],
+                            [6,6],[8,6],
+                            [5,7],[7,7],
+                            [6,8],[8,8]
             ],
             liberties: [],
             strategy: "always-pass"

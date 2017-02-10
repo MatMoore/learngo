@@ -15,6 +15,13 @@ type Strategy
     | RandomStone
 
 
+
+-- Consider all captures first, order by number captures + number atari
+-- If no capture, atari
+-- If no atari, random
+-- | AlwaysCapture
+
+
 type alias GameState =
     ( Game, Random.Seed )
 

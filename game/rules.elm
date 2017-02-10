@@ -12,7 +12,7 @@ module Game.Rules
 import Game.Types exposing (..)
 import Board exposing (Player(..), Point, Board, Annotation(..), nextPlayer)
 import Group exposing (removeDeadNeighbors, removeDead)
-import Game.Log exposing (addNote, addMove)
+import Game.Log exposing (addNote, addMove, findBoard)
 import Set
 
 
@@ -38,10 +38,11 @@ play move game =
                 |> Result.andThen oneStonePerPointRule
                 |> Result.andThen captureRule
                 |> Result.andThen suicideRule
+                |> Result.andThen koRule
     in
         case result of
-            Ok moveInProgress ->
-                Ok { game | board = moveInProgress.provisionalBoard, log = (addMove move game.log), currentPlayer = nextPlayer game.currentPlayer }
+            Ok { provisionalBoard } ->
+                Ok { game | board = provisionalBoard, log = (addMove move provisionalBoard game.log), currentPlayer = nextPlayer game.currentPlayer }
 
             Err msg ->
                 Err { game | log = addNote msg game.log }
@@ -132,3 +133,18 @@ suicideRule inProgress =
 
             _ ->
                 Ok inProgress
+
+
+koRule : MoveInProgress -> Result String MoveInProgress
+koRule inProgress =
+    let
+        isPass =
+            (Tuple.second inProgress.currentMove) == Pass
+
+        alreadyHappened =
+            findBoard inProgress.provisionalBoard inProgress.game.log
+    in
+        if not isPass && alreadyHappened then
+            Err "Cannot repeat a previously played board position"
+        else
+            Ok inProgress

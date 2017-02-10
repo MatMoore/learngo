@@ -1,4 +1,4 @@
-module Game.Log exposing (addNote, addMove, notes)
+module Game.Log exposing (addNote, addMove, notes, findBoard)
 
 {-| Game.Log manages a log of the game.
 # Adding moves to the log
@@ -12,7 +12,8 @@ module Game.Log exposing (addNote, addMove, notes)
 -}
 
 import Game.Types exposing (..)
-import Board exposing (Player(..))
+import Board exposing (Player(..), Point, Board)
+import Set exposing (Set)
 
 
 {-| Add a message to the log.
@@ -32,7 +33,7 @@ notes log =
                 NoteEvent msg ->
                     Just msg
 
-                PlayEvent ( player, Pass ) ->
+                PlayEvent ( player, Pass ) _ ->
                     Just "White pass"
 
                 _ ->
@@ -43,6 +44,21 @@ notes log =
 
 {-| Add a move to the log.
 -}
-addMove : Move -> Log -> Log
-addMove move log =
-    PlayEvent move :: log
+addMove : Move -> Board -> Log -> Log
+addMove move result log =
+    (PlayEvent move result) :: log
+
+
+{-| Find a board in the log.
+-}
+findBoard : Board -> Log -> Bool
+findBoard board log =
+    case log of
+        (PlayEvent move pastBoard) :: rest ->
+            (board == pastBoard) || (findBoard board rest)
+
+        _ :: rest ->
+            (findBoard board rest)
+
+        [] ->
+            False

@@ -16,6 +16,7 @@ module Game.Types exposing (..)
 -}
 
 import Dict exposing (Dict)
+import Set exposing (Set)
 import Board exposing (Player(..), Point, Board, Annotation(..))
 import Time exposing (Time)
 
@@ -45,7 +46,7 @@ type GameMessage
 {-| A record of something that happened in the game
 -}
 type Event
-    = PlayEvent Move
+    = PlayEvent Move Board
     | NoteEvent String
 
 
