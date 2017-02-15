@@ -9284,77 +9284,6 @@ var _user$project$Game_Types$PlayEvent = F2(
 		return {ctor: 'PlayEvent', _0: a, _1: b};
 	});
 
-var _user$project$AI$pointIsEmpty = F2(
-	function (game, point) {
-		return !A2(_user$project$Board$isFilled, point, game.board);
-	});
-var _user$project$AI$getFreeSpaces = function (game) {
-	return _elm_lang$core$Array$fromList(
-		A2(
-			_elm_lang$core$List$filter,
-			_user$project$AI$pointIsEmpty(game),
-			_user$project$Board$points(game.board)));
-};
-var _user$project$AI$moveGenerator = F2(
-	function (defaultMove, possibleMoves) {
-		var lookupMove = function (i) {
-			return A2(
-				_elm_lang$core$Maybe$withDefault,
-				defaultMove,
-				A2(_elm_lang$core$Array$get, i, possibleMoves));
-		};
-		var totalMoves = _elm_lang$core$Array$length(possibleMoves);
-		var indexGenerator = A2(_elm_lang$core$Random$int, 0, totalMoves - 1);
-		return A2(_elm_lang$core$Random$map, lookupMove, indexGenerator);
-	});
-var _user$project$AI$moveCommand = function (move) {
-	return A2(
-		_elm_lang$core$Task$perform,
-		_user$project$Game_Types$ComputerPlay,
-		_elm_lang$core$Task$succeed(move));
-};
-var _user$project$AI$generateMove = F3(
-	function (strategy, player, game) {
-		var _p0 = strategy;
-		if (_p0.ctor === 'Just') {
-			if (_p0._0.ctor === 'AlwaysPass') {
-				return _user$project$AI$moveCommand(
-					{ctor: '_Tuple2', _0: player, _1: _user$project$Game_Types$Pass});
-			} else {
-				var possibleMoves = A2(
-					_elm_lang$core$Array$map,
-					function (point) {
-						return {
-							ctor: '_Tuple2',
-							_0: player,
-							_1: _user$project$Game_Types$Play(point)
-						};
-					},
-					_user$project$AI$getFreeSpaces(game));
-				var generator = A2(
-					_user$project$AI$moveGenerator,
-					{ctor: '_Tuple2', _0: player, _1: _user$project$Game_Types$Pass},
-					possibleMoves);
-				return A2(_elm_lang$core$Random$generate, _user$project$Game_Types$ComputerPlay, generator);
-			}
-		} else {
-			return _elm_lang$core$Platform_Cmd$none;
-		}
-	});
-var _user$project$AI$RandomStone = {ctor: 'RandomStone'};
-var _user$project$AI$AlwaysPass = {ctor: 'AlwaysPass'};
-var _user$project$AI$getStrategy = function (name) {
-	var _p1 = name;
-	switch (_p1) {
-		case 'always-pass':
-			return _elm_lang$core$Maybe$Just(_user$project$AI$AlwaysPass);
-		case 'random-stone':
-			return _elm_lang$core$Maybe$Just(_user$project$AI$RandomStone);
-		default:
-			return _elm_lang$core$Maybe$Nothing;
-	}
-};
-
 var _user$project$Group$groupLiberties = function (group) {
 	var boardLiberties = function (point) {
 		return _elm_lang$core$Set$toList(
@@ -9620,6 +9549,125 @@ var _user$project$Game_Api$new = function (boardSize) {
 		log: {ctor: '[]'},
 		currentPlayer: _user$project$Board$Black
 	};
+};
+
+var _user$project$AI$pointIsEmpty = F2(
+	function (game, point) {
+		return !A2(_user$project$Board$isFilled, point, game.board);
+	});
+var _user$project$AI$getFreeSpaces = function (game) {
+	return _elm_lang$core$Array$fromList(
+		A2(
+			_elm_lang$core$List$filter,
+			_user$project$AI$pointIsEmpty(game),
+			_user$project$Board$points(game.board)));
+};
+var _user$project$AI$moveGenerator = F2(
+	function (defaultMove, possibleMoves) {
+		var lookupMove = function (i) {
+			return A2(
+				_elm_lang$core$Maybe$withDefault,
+				defaultMove,
+				A2(_elm_lang$core$Array$get, i, possibleMoves));
+		};
+		var totalMoves = _elm_lang$core$Array$length(possibleMoves);
+		var indexGenerator = A2(_elm_lang$core$Random$int, 0, totalMoves - 1);
+		return A2(_elm_lang$core$Random$map, lookupMove, indexGenerator);
+	});
+var _user$project$AI$possibleCaptures = F2(
+	function (player, game) {
+		var isCapture = function (move) {
+			var _p0 = A2(_user$project$Game_Api$play, move, game);
+			if (_p0.ctor === 'Ok') {
+				return _elm_lang$core$Native_Utils.cmp(
+					_elm_lang$core$List$length(
+						_user$project$Board$stones(_p0._0.board)),
+					_elm_lang$core$List$length(
+						_user$project$Board$stones(game.board)) + 1) < 0;
+			} else {
+				return false;
+			}
+		};
+		var moveForPoint = function (point) {
+			return {
+				ctor: '_Tuple2',
+				_0: player,
+				_1: _user$project$Game_Types$Play(point)
+			};
+		};
+		var points = _elm_lang$core$Array$toList(
+			_user$project$AI$getFreeSpaces(game));
+		var moves = A2(_elm_lang$core$List$map, moveForPoint, points);
+		return A2(_elm_lang$core$List$filter, isCapture, moves);
+	});
+var _user$project$AI$moveCommand = function (move) {
+	return A2(
+		_elm_lang$core$Task$perform,
+		_user$project$Game_Types$ComputerPlay,
+		_elm_lang$core$Task$succeed(move));
+};
+var _user$project$AI$AlwaysCapture = {ctor: 'AlwaysCapture'};
+var _user$project$AI$RandomStone = {ctor: 'RandomStone'};
+var _user$project$AI$generateMove = F3(
+	function (strategy, player, game) {
+		generateMove:
+		while (true) {
+			var _p1 = strategy;
+			if (_p1.ctor === 'Just') {
+				switch (_p1._0.ctor) {
+					case 'AlwaysPass':
+						return _user$project$AI$moveCommand(
+							{ctor: '_Tuple2', _0: player, _1: _user$project$Game_Types$Pass});
+					case 'RandomStone':
+						var possibleMoves = A2(
+							_elm_lang$core$Array$map,
+							function (point) {
+								return {
+									ctor: '_Tuple2',
+									_0: player,
+									_1: _user$project$Game_Types$Play(point)
+								};
+							},
+							_user$project$AI$getFreeSpaces(game));
+						var generator = A2(
+							_user$project$AI$moveGenerator,
+							{ctor: '_Tuple2', _0: player, _1: _user$project$Game_Types$Pass},
+							possibleMoves);
+						return A2(_elm_lang$core$Random$generate, _user$project$Game_Types$ComputerPlay, generator);
+					default:
+						var captureMove = _elm_lang$core$List$head(
+							A2(_user$project$AI$possibleCaptures, player, game));
+						var _p2 = captureMove;
+						if (_p2.ctor === 'Just') {
+							return _user$project$AI$moveCommand(_p2._0);
+						} else {
+							var _v3 = _elm_lang$core$Maybe$Just(_user$project$AI$RandomStone),
+								_v4 = player,
+								_v5 = game;
+							strategy = _v3;
+							player = _v4;
+							game = _v5;
+							continue generateMove;
+						}
+				}
+			} else {
+				return _elm_lang$core$Platform_Cmd$none;
+			}
+		}
+	});
+var _user$project$AI$AlwaysPass = {ctor: 'AlwaysPass'};
+var _user$project$AI$getStrategy = function (name) {
+	var _p3 = name;
+	switch (_p3) {
+		case 'always-pass':
+			return _elm_lang$core$Maybe$Just(_user$project$AI$AlwaysPass);
+		case 'random-stone':
+			return _elm_lang$core$Maybe$Just(_user$project$AI$RandomStone);
+		case 'always-capture':
+			return _elm_lang$core$Maybe$Just(_user$project$AI$AlwaysCapture);
+		default:
+			return _elm_lang$core$Maybe$Nothing;
+	}
 };
 
 var _user$project$Types$Flags = F4(

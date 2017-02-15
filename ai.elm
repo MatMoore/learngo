@@ -2,6 +2,7 @@ module AI exposing (Strategy, generateMove, getStrategy)
 
 import Board exposing (Player, Point)
 import Game.Types exposing (Game, Move, Action(..), GameMessage(..))
+import Game.Api exposing (play)
 import Random
 import Maybe
 import Array
@@ -13,6 +14,7 @@ import Array exposing (Array)
 type Strategy
     = AlwaysPass
     | RandomStone
+    | AlwaysCapture
 
 
 
@@ -34,6 +36,9 @@ getStrategy name =
 
         "random-stone" ->
             Just RandomStone
+
+        "always-capture" ->
+            Just AlwaysCapture
 
         _ ->
             Nothing
@@ -60,8 +65,43 @@ generateMove strategy player game =
             in
                 Random.generate ComputerPlay generator
 
+        Just AlwaysCapture ->
+            let
+                captureMove =
+                    List.head (possibleCaptures player game)
+            in
+                case captureMove of
+                    Just move ->
+                        moveCommand move
+
+                    Nothing ->
+                        generateMove (Just RandomStone) player game
+
         Nothing ->
             Cmd.none
+
+
+possibleCaptures : Player -> Game -> List Move
+possibleCaptures player game =
+    let
+        points =
+            Array.toList (getFreeSpaces game)
+
+        moveForPoint point =
+            ( player, Play point )
+
+        moves =
+            List.map moveForPoint points
+
+        isCapture move =
+            case play move game of
+                Ok newGame ->
+                    (List.length (Board.stones newGame.board)) < (List.length (Board.stones game.board)) + 1
+
+                _ ->
+                    False
+    in
+        List.filter isCapture moves
 
 
 moveGenerator : Move -> Array Move -> Random.Generator Move
