@@ -49,7 +49,7 @@ update msg model =
 
                             Err game ->
                                 {--( { game | log = addNote "AI got confused :/" game.log }, Cmd.none ) --}
-                                ( model, Cmd.none )
+                                ( model, generateMove model.strategy White model.game )
 
                 Nothing ->
                     ( model, Cmd.none )
